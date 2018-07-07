@@ -37,11 +37,12 @@ def main():
     
     #hiperparams
     epochs = 100
-    lr = 0.00005
+    lr = 0.0001
     reg = 0.01
 
     input_size = 784
-    hidden_sz = 300
+    hidden1 = 300
+    hidden2 = 150
     output_sz = 10
 
     n = x_train.shape[0] 
@@ -52,24 +53,29 @@ def main():
     thX = T.matrix('X')
     thT = T.matrix('T')
 
-    w1 = theano.shared(np.random.randn(input_size, hidden_sz), 'w1')
-    b1 = theano.shared(np.random.randn(hidden_sz), 'b1')
-    w2 = theano.shared(np.random.randn(hidden_sz, output_sz), 'w2')
-    b2 = theano.shared(np.random.randn(output_sz), 'b2')
+    w1 = theano.shared(np.random.randn(input_size, hidden1), 'w1')
+    b1 = theano.shared(np.random.randn(hidden1), 'b1')
+    w2 = theano.shared(np.random.randn(hidden1, hidden2), 'w2')
+    b2 = theano.shared(np.random.randn(hidden2), 'b2')
+    w3 = theano.shared(np.random.randn(hidden2, output_sz), 'w3')
+    b3 = theano.shared(np.random.randn(output_sz), 'b3')
     
-    thZ = T.nnet.relu(thX.dot(w1) + b1)
-    thY = T.nnet.softmax(thZ.dot(w2) + b2)
+    thZ1 = T.tanh(thX.dot(w1) + b1)
+    thZ2 = T.nnet.relu(thZ1.dot(w2) + b2)
+    thY = T.nnet.softmax(thZ2.dot(w3) + b3)
     
-    loss = -(thT * T.log(thY)).sum() + reg * ((w1**2).sum() + (b1**2).sum() + (w2**2).sum() + (b2**2).sum())
+    loss = -(thT * T.log(thY)).sum() + reg * ((w1**2).sum() + (b1**2).sum() + (w2**2).sum() + (b2**2).sum() + (w3**2).sum() + (b3**2).sum())
     prediction = T.argmax(thY, axis=1)
     
     update_w1 = w1 - lr * T.grad(loss, w1)
     update_b1 = b1 - lr * T.grad(loss, b1)
     update_w2 = w2 - lr * T.grad(loss, w2)
     update_b2 = b2 - lr * T.grad(loss, b2)
+    update_w3 = w3 - lr * T.grad(loss, w3)
+    update_b3 = b3 - lr * T.grad(loss, b3)
     
     train = theano.function(inputs=[thX, thT],
-                            updates=[(w1, update_w1), (b1, update_b1), (w2, update_w2), (b2, update_b2)],
+                            updates=[(w1, update_w1), (b1, update_b1), (w2, update_w2), (b2, update_b2), (w3, update_w3), (b3, update_b3)],
                             )
     
     get_prediction = theano.function(inputs=[thX, thT],
@@ -86,9 +92,9 @@ def main():
             if j % 20 == 0:
                 loss_value, prediction_value = get_prediction(x_test, yTest_ind)
                 error = error_rate(prediction_value, y_test)
-                c = classification_rate(y_test, prediction_value)
+                classification = classification_rate(y_test, prediction_value)
                 losses.append(loss_value)
-                print("Loss: {}, epoch: {}, error: {}, classification_rate: {}".format(loss_value, i, error * 100, c * 100))
+                print("Loss: {}, epoch: {}, error: {}, classification_rate: {}".format(loss_value, i, error * 100, classification * 100))
     plt.plot(losses)
     plt.show()
     
