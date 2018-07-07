@@ -43,7 +43,6 @@ def main():
     #hyperparam
     epochs = 100
     lr = 0.00005
-    reg = 0.01
     
     input_sz = 784
     hidden_sz = 300
@@ -93,23 +92,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
