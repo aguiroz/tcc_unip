@@ -17,10 +17,10 @@ def softmax(x):
     expX = np.exp(x)
     return expX / expX.sum(axis=1, keepdims=True)
 
-def forward(X, W1, W2):
-    b1 = sigmoid(X.dot(W1))
-    b2 = softmax(b1.dot(W2))
-    return b1, b2
+def forward(X, W1, b1, W2, b2):
+    z = sigmoid(X.dot(W1) + b1)
+    y = softmax(z.dot(W2) + b2)
+    return z, y
 
 def classification_rate(Y, P):
     n_correct = 0
@@ -34,12 +34,18 @@ def classification_rate(Y, P):
 def grad_w2(hidden, target, output):
     return hidden.T.dot(output - target)
 
+def grad_b2(target, output):
+    return (target - output).sum(axis=0)
+
 def grad_w1(X, hidden, target, output, W2):
     return X.T.dot(((output - target).dot(W2.T) * (hidden * (1 - hidden))))
 
-def cost(target, output):
-    tot = target * np.log(output)
-    return tot.sum()
+def grad_b1(target, output, W2, hidden):
+    return ((target - output).dot(W2.T) * hidden * (1 - hidden)).sum(axis=0)
+
+def cost(target, output, reg, W1, b1, W2, b2):
+    tot = (target * np.log(output) + reg * (W1**2).sum() + (b1**2).sum() + (W2**2).sum() + (b2**2).sum()).sum()
+    return tot
 
 def save(data, index, result):
     img = Image.fromarray(data.reshape(28,28), 'L')
@@ -64,14 +70,17 @@ def main():
         target[i, Y[i]] = 1
         
     W1 = np.random.randn(input_size, hidden_size)
+    b1 = np.random.randn(hidden_size)
     W2 = np.random.randn(hidden_size, output_size)
+    b2 = np.random.randn(output_size)
     
     learning_rate = 1e-5
+    reg = 0.001
     costs = []
     
     for epoch in range(1000):
-        hidden, output = forward(X, W1, W2)
-        c = cost(target, output)
+        hidden, output = forward(X, W1, b1, W2, b2)
+        c = cost(target, output, reg, W1, b1, W2, b2)
         P = np.argmax(output, axis=1)
         r = classification_rate(Y, P)
         
@@ -81,7 +90,9 @@ def main():
         costs.append(c)
     
         W2 -= learning_rate * grad_w2(hidden, target, output)
+        b2 -= learning_rate * grad_b2(target, output)
         W1 -= learning_rate * grad_w1(X, hidden, target, output, W2)
+        b1 -= learning_rate * grad_b1(target, output, W2, hidden)
         
     plt.plot(costs)
     plt.show()
