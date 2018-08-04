@@ -6,6 +6,7 @@
 * Numpy
 * Python-tk
 * Pillow
+* Tkinter
 
 ## Running scenarios
 python mnist_derivative_desc.py
