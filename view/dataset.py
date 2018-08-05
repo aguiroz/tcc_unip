@@ -16,6 +16,7 @@ class Dataset:
     ed1 = Entry(janela,)
     ed2 = Entry(janela,)
 
+    # Os botões procuram devem abrir a janela para buscar o arquivo localmente ? Validar com o Anderson
     btn1 = Button(janela, text="Procurar")
     btn2 = Button(janela, text="Procurar")
     btn3 = Button(janela, text="Salvar")

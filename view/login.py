@@ -8,13 +8,16 @@ from Tkinter import *
 
 class Login:
     janela = Tk()
-
+    
     lb1 = Label(janela, text="Login: ")
     lb2 = Label(janela, text="Senha: ")
     
     ed1 = Entry(janela,)
     ed2 = Entry(janela,)
-
+    
+    # Esse botão deve chamar a index.py e ter uma validação de usuário e senha
+    # Exemplo: se usuário for admin e senha for admin, OK, se não senha incorreta
+    # Ao digitar a senha deve ficar em asterísco escondida
     btn1 = Button(janela, text="Entrar")
 
     lb1.grid(row=0, column=0)
