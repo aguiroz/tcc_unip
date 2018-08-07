@@ -31,11 +31,6 @@ class Login:
     lb20 = Label(janela, text=" ")
     lb21 = Label(janela, text=" ")
     lb22 = Label(janela, text=" ")
-    lb23 = Label(janela, text=" ")
-    lb24 = Label(janela, text=" ")
-    lb25 = Label(janela, text=" ")
-    lb26 = Label(janela, text=" ")
-    lb27 = Label(janela, text=" ")
     
     ed1 = Entry(janela,)
     ed2 = Entry(janela,)
