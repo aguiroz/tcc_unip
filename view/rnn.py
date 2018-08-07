@@ -15,14 +15,14 @@ sys.setdefaultencoding("utf8")
 class Rnn:
     label = ["Feedforward", "RNN", "CNN"]
 
-    no_movies = [
+    values = [
         10,
         20,
         3
     ]
 
     index = np.arange(len(label))
-    plt.bar(index, no_movies)
+    plt.bar(index, values)
     plt.xlabel("Acerto", fontsize=11)
     plt.ylabel("Custo", fontsize=11)
     plt.xticks(index, label, fontsize=11, rotation=20)
