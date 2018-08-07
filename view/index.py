@@ -5,7 +5,6 @@ Created on Sat Ago 4 18:17:35 2018
 @author: fabiosoaresv
 """
 from Tkinter import *
-#import tkinter.messagebox as tkMessagebox
 
 class Index:
     janela = Tk()
