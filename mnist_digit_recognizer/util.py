@@ -1,23 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jul  7 14:29:51 2018
+Created on Sat Sep  1 16:49:52 2018
 
 @author: aguiroz
 """
 
 import numpy as np
+import os
 
-def loadData():
-    data = np.loadtxt(open('data/train.csv'), delimiter=',', skiprows=1, dtype=np.float64)
-    x = np.array([i[1:] for i in data])
-    y = np.array([i[0] for i in data])
-    return x,y
+def load_train_data():
+    mnist = np.loadtxt("data/train2.csv", delimiter=",", skiprows=1)
+    
+    x_train = np.array([i[1:] for i in mnist[:1000]]).astype(np.float32)
+    y_train = np.array([i[0] for i in mnist[:1000]])
+    
+    x_test = np.array([i[1:] for i in mnist[-1000:]]).astype(np.float32)
+    y_test = np.array([i[0] for i in mnist[-1000:]])
+    
+    return x_train, y_train, x_test, y_test
 
-def getIndicator(y: np.array):
+def get_indicator(y):
     y = y.astype(np.int32)
     n = len(y)
     ind = np.zeros((n, 10))
     for i in range(n):
         ind[i, y[i]] = 1
+        
     return ind
+
+def sigmoid(x):
+    return 1 / 1 + np.exp(-x)
+
+def relu(x):
+    return x * (x > 0)
+
+def softmax(x):
+    expX = np.exp(x)
+    
+    return expX / expX.sum(axis=1, keepdims=True)
+
+def check_path(name):
+    if not os.path.exists("model"):
+        os.mkdir("model")
+        
+    if not os.path.exists("model/{}".format(name)):
+        os.mkdir("model/{}".format(name))
+    
+    return
+        
+def check_model(name, fw):
+    return os.path.exists("model/{}/{}.npz".format(name, fw))
