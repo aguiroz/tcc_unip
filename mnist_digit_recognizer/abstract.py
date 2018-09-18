@@ -7,11 +7,16 @@ Created on Sat Sep  1 18:29:04 2018
 """
 
 import numpy as np
-from tkinter import Tk
+
 from abc import abstractmethod
-from interface import NNInterface
+from interface import NNInterface, NNScreenInterface
+
 from util import check_path
 from util import check_model
+
+#screen
+from tkinter import Tk, Label, Button, Entry
+from tkinter.ttk import Progressbar
 
 
 class NNAbstract(NNInterface):
@@ -26,7 +31,7 @@ class NNAbstract(NNInterface):
     
     @abstractmethod
     def create_model(self):
-        pass
+        raise NotImplementedError
     
     @classmethod
     def load_weight(cls):
@@ -49,16 +54,152 @@ class NNAbstract(NNInterface):
     
     @abstractmethod
     def fit(self):
-        pass
+        raise NotImplementedError
     
     @abstractmethod
     def predict(self):
-        pass
+        raise NotImplementedError
     
-    def update_plot(self, epoch):
+    def update_progress(self, epoch):
         self.screen.update_progress(epoch)
         return
     
-    def update_progress(self):
-        pass
+    @abstractmethod
+    def update_plot(self):
+        raise NotImplementedError
     
+class NNScreenAbstract(NNScreenInterface, Tk):
+    
+    @abstractmethod
+    def __init__(self, title):
+        Tk.__init__(self)
+        self.title(title)
+        self.geometry("900x450+100+100")
+        self.create_model()
+        self.set_position()
+        return
+    
+    def create_model(self):
+        #Labels    
+        self.lb1 = Label(self, text="Dataset`s Information: ")
+        self.lb2 = Label(self, text="Ammount of Data: ")
+        self.lb3 = Label(self, text="Ammount of Train Data: ")
+        self.lb4 = Label(self, text="Dataset`s Size: ")
+        self.lb5 = Label(self, text="Ammount of Data to Test: ")
+        self.lb6 = Label(self, text="Train ")
+        self.lb7 = Label(self, text="Cost: ")
+        self.lb8 = Label(self, text="Error: ")
+        self.lb9 = Label(self, text="Correct: ")
+        self.lb10 = Label(self, text="Iteration: ")
+        self.lb11 = Label(self, text="Batch: ")
+        self.lb12 = Label(self, text="Test ")
+        self.lb13 = Label(self, text="Cost: ")
+        self.lb14 = Label(self, text="Error: ")
+        self.lb15 = Label(self, text="Correct: ")
+        self.lb16 = Label(self, text="Elapsed Time: ")
+        self.lb17 = Label(self, text="Progress: ")
+        self.lb18 = Label(self, text="Train x Test: ")
+        self.lb19 = Label(self, text=" ")
+        self.lb20 = Label(self, text=" ")
+        self.lb21 = Label(self, text=" ")
+        self.lb22 = Label(self, text=" ")
+        
+        #Entries
+        self.ed1 = Entry(self,)
+        self.ed2 = Entry(self,)
+        self.ed3 = Entry(self,)
+        self.ed4 = Entry(self,)
+        self.ed5 = Entry(self,)
+        self.ed6 = Entry(self,)
+        self.ed7 = Entry(self,)
+        self.ed8 = Entry(self,)
+        self.ed9 = Entry(self,)
+        self.ed10 = Entry(self,)
+        self.ed11 = Entry(self,)
+        self.ed12 = Entry(self,)
+        self.ed13 = Entry(self,)
+        
+        #Progress
+        self.progress = Progressbar(self, orient='horizontal', length=600, mode='determinate')
+        
+        #Buttons
+        self.btn1 = Button(self, text="-")
+        self.btn2 = Button(self, text="+")
+        self.btn3 = Button(self, text="-")
+        self.btn4 = Button(self, text="+")
+        self.btn5 = Button(self, text="Train")
+        self.btn6 = Button(self, text="Predict")
+        
+        return
+    
+    def set_position(self):
+        
+        #Labels
+        self.lb1.grid(row=0, column=0)
+        self.lb2.grid(row=1, column=0)
+        self.lb3.grid(row=1, column=2)
+        self.lb4.grid(row=2, column=0)
+        self.lb5.grid(row=2, column=2)
+        
+        #Separator
+        self.lb19.grid(row=3, column=0)
+        self.lb20.grid(row=4, column=0)
+        
+        self.lb6.grid(row=5, column=0)
+        self.lb7.grid(row=6, column=0)
+        self.lb8.grid(row=7, column=0)
+        self.lb9.grid(row=8, column=0)
+        self.lb10.grid(row=9, column=0)
+        self.lb11.grid(row=10, column=0)
+        self.lb12.grid(row=5, column=2)
+        self.lb13.grid(row=6, column=2)
+        self.lb14.grid(row=7, column=2)
+        self.lb15.grid(row=8, column=2)
+        self.lb16.grid(row=9, column=2)
+        self.lb17.grid(row=16, column=0)
+        
+        #Separator
+        self.lb21.grid(row=12, column=0)
+        self.lb22.grid(row=15, column=0)
+        
+        self.ed1.grid(row=1, column=1)
+        self.ed2.grid(row=2, column=1)
+        self.ed3.grid(row=1, column=4)
+        self.ed4.grid(row=2, column=4)
+        self.ed5.grid(row=6, column=1)
+        self.ed6.grid(row=7, column=1)
+        self.ed7.grid(row=8, column=1)
+        self.ed8.grid(row=9, column=1)
+        self.ed9.grid(row=10, column=1)
+        self.ed10.grid(row=6, column=3)
+        self.ed11.grid(row=7, column=3)
+        self.ed12.grid(row=8, column=3)
+        self.ed13.grid(row=9, column=3)
+        
+        #Progress
+        self.progress.grid(row=16, column=1, columnspan=4)
+        
+        self.btn1.grid(row=1, column=3)
+        self.btn2.grid(row=1, column=5)
+        self.btn3.grid(row=2, column=3)
+        self.btn4.grid(row=2, column=5)
+        self.btn5.grid(row=14, column=1)
+        self.btn6.grid(row=14, column=3)
+
+        return
+    
+    @abstractmethod    
+    def predict(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def set_info(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def fit(self):
+        raise NotImplementedError
+    
+    def update_progress(self, value):
+        self.progress["value"] = value
+        return

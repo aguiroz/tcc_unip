@@ -33,3 +33,26 @@ class NNInterface(metaclass=ABCMeta):
     def save_weight(self):
         raise NotImplementedError
             
+        
+        
+class NNScreenInterface(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def create_model(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def set_position(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def fit(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def predict(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def set_info(self):
+        raise NotImplementedError
