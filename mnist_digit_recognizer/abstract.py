@@ -15,9 +15,13 @@ from util import check_path
 from util import check_model
 
 #screen
-from tkinter import Tk, Label, Button, Entry
+from tkinter import Tk, Label, Button, Entry, Frame
 from tkinter.ttk import Progressbar
 
+#Plotting
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import time
 
 class NNAbstract(NNInterface):
     
@@ -104,6 +108,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.lb20 = Label(self, text=" ")
         self.lb21 = Label(self, text=" ")
         self.lb22 = Label(self, text=" ")
+        self.lb23 = Label(self, text=" ")
         
         #Entries
         self.ed1 = Entry(self,)
@@ -122,6 +127,12 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         
         #Progress
         self.progress = Progressbar(self, orient='horizontal', length=600, mode='determinate')
+        
+        #Plotting
+        self.plot_frame = Frame(self, width=800, height=800, background='white')
+        self.figure = Figure()
+        self.ax = self.figure.add_subplot(111)
+        self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         
         #Buttons
         self.btn1 = Button(self, text="-")
@@ -162,6 +173,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         #Separator
         self.lb21.grid(row=12, column=0)
         self.lb22.grid(row=15, column=0)
+        self.lb23.grid(row=19, column=0)
         
         self.ed1.grid(row=1, column=1)
         self.ed2.grid(row=2, column=1)
@@ -179,6 +191,11 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         
         #Progress
         self.progress.grid(row=16, column=1, columnspan=4)
+        
+        #Plotting
+        self.plot_frame.grid(row=20, column=1, columnspan=8)
+        self.ax.grid()
+        self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
         
         self.btn1.grid(row=1, column=3)
         self.btn2.grid(row=1, column=5)
