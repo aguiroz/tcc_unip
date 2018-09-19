@@ -22,11 +22,10 @@ from tkinter.ttk import Progressbar
 class NNAbstract(NNInterface):
     
     @abstractmethod
-    def __init__(self, model_name, fw, screen: Tk):
+    def __init__(self, model_name, fw):
         check_path(model_name)
         self.model_name = model_name
         self.model_exist = check_model(model_name, fw)
-        self.screen = screen
         return
     
     @abstractmethod
@@ -60,8 +59,8 @@ class NNAbstract(NNInterface):
     def predict(self):
         raise NotImplementedError
     
-    def update_progress(self, epoch):
-        self.screen.update_progress(epoch)
+    def update_progress(self, screen, epoch):
+        screen.update_progress(epoch)
         return
     
     @abstractmethod
@@ -74,9 +73,11 @@ class NNScreenAbstract(NNScreenInterface, Tk):
     def __init__(self, title):
         Tk.__init__(self)
         self.title(title)
-        self.geometry("900x450+100+100")
+        self.geometry("900x800+100+100")
         self.create_model()
         self.set_position()
+        
+        
         return
     
     def create_model(self):
@@ -127,7 +128,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.btn2 = Button(self, text="+")
         self.btn3 = Button(self, text="-")
         self.btn4 = Button(self, text="+")
-        self.btn5 = Button(self, text="Train")
+        self.btn5 = Button(self, text="Train", command=self.fit)
         self.btn6 = Button(self, text="Predict")
         
         return
@@ -192,7 +193,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
     def predict(self):
         raise NotImplementedError
     
-    @abstractmethod
+    #@abstractmethod
     def set_info(self):
         raise NotImplementedError
     
