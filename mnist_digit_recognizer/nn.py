@@ -72,9 +72,6 @@ class MLP(NNAbstract):
     def getError(self, target, prediction):
         return (np.mean(prediction != target))
     
-    def update_plot(selg):
-        pass
-    
     
     def fit(self, screen, learning_rate=1e-5, batch_sz=500):
         x_train, y_train, x_test, y_test = load_train_data()

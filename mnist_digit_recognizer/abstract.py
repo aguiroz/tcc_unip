@@ -67,9 +67,9 @@ class NNAbstract(NNInterface):
         screen.update_progress(epoch)
         return
     
-    @abstractmethod
-    def update_plot(self):
-        raise NotImplementedError
+    def update_plot(self, screen, train, test):
+        screen.update_plot(train, test)
+        return
     
 class NNScreenAbstract(NNScreenInterface, Tk):
     
@@ -220,4 +220,12 @@ class NNScreenAbstract(NNScreenInterface, Tk):
     
     def update_progress(self, value):
         self.progress["value"] = value
+        return
+
+    def update_plot(self, train, test):
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(train, color='orange')
+        self.ax.plot(test, color='blue')
+        self.graph.draw()
         return
