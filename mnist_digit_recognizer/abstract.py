@@ -218,8 +218,12 @@ class NNScreenAbstract(NNScreenInterface, Tk):
     def fit(self):
         raise NotImplementedError
     
+    def set_maximum_progress(self, value):
+        self.progress["maximum"] = value
+        return
+        
     def update_progress(self, value):
-        self.progress["value"] = value
+        self.progress["value"] += value
         return
 
     def update_plot(self, train, test):
