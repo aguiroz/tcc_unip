@@ -10,13 +10,13 @@ import numpy as np
 import os
 
 def load_train_data():
-    mnist = np.loadtxt("data/train2.csv", delimiter=",", skiprows=1)
+    mnist = np.loadtxt("data/train.csv", delimiter=",", skiprows=1, dtype=np.float32)
     
-    x_train = np.array([i[1:] for i in mnist[:1000]]).astype(np.float32)
-    y_train = np.array([i[0] for i in mnist[:1000]])
-    
-    x_test = np.array([i[1:] for i in mnist[-1000:]]).astype(np.float32)
-    y_test = np.array([i[0] for i in mnist[-1000:]])
+    x_train = np.array([i[1:] / 255 for i in mnist])
+    y_train = np.array([i[0] for i in mnist])
+
+    x_test = np.array([i[1:] / 255 for i in mnist])
+    y_test = np.array([i[0] for i in mnist])
     
     return x_train, y_train, x_test, y_test
 
@@ -36,8 +36,7 @@ def relu(x):
     return x * (x > 0)
 
 def softmax(x):
-    expX = np.exp(x)
-    
+    expX = np.exp(x)  
     return expX / expX.sum(axis=1, keepdims=True)
 
 def check_path(name):
