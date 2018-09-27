@@ -56,3 +56,7 @@ class NNScreenInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_info(self):
         raise NotImplementedError
+        
+    @abstractmethod
+    def set_maximum_progress(self):
+        raise NotImplementedError
