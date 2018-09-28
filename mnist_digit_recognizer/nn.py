@@ -179,7 +179,11 @@ class TMLP(NNAbstract):
                                          outputs=[self.loss, self.prediction],
                                          )
 
-        pass
+        return
+    
+    def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, elapsed=0):
+        screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch)        
+        return
     
     def predict(self):
         pass
@@ -221,6 +225,8 @@ class TMLP(NNAbstract):
                 
                 screen.update_plot(self.train_losses, self.test_losses)
                 screen.update_progress(i * j)
+                
+                self.update_info(screen, train_loss, train_error * 100, 0, test_loss, test_error * 100, 0, i, j)
                 
                 print("Epoch: {}, Loss: {}, Error: {}".format(i, train_loss, train_error * 100))
                 
