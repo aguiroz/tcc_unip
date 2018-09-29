@@ -194,7 +194,7 @@ class TMLP(NNAbstract):
         n_batch = x_train.shape[0] // batch_sz
         y_train_ind = get_indicator(y_train)
         
-        screen.set_maximum_progress(epoch * batch_sz)
+        screen.set_maximum_progress(epoch * n_batch)
 
         self.train_losses = []
         self.test_losses = []
@@ -224,7 +224,7 @@ class TMLP(NNAbstract):
                 self.test_losses.append(test_loss)
                 
                 screen.update_plot(self.train_losses, self.test_losses)
-                screen.update_progress(i * j)
+                screen.update_progress()
                 
                 self.update_info(screen, train_loss, train_error * 100, 0, test_loss, test_error * 100, 0, i, j)
                 

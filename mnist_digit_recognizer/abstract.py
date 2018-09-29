@@ -285,7 +285,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.progress["maximum"] = value
         return
         
-    def update_progress(self, value):
+    def update_progress(self, value=1):
         self.progress["value"] += value
         return
 
