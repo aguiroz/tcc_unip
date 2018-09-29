@@ -13,7 +13,7 @@ import theano
 import theano.tensor as T
 
 from util import load_train_data
-from util import get_indicator
+from util import get_indicator, classificationRate
 from util import sigmoid, softmax
 from sklearn.utils import shuffle
 from abstract import NNAbstract
@@ -68,15 +68,6 @@ class MLP(NNAbstract):
         #print("output: {}".format(output))
         tot = target * np.log(output)
         return tot.sum()
-    
-    def classificationRate(self, target, prediction):
-        n_total = 0
-        n_correct = 0
-        for i in range(len(target)):
-            n_total += 1
-            if target[i] == prediction[i]:
-                n_correct += 1
-        return n_correct / n_total
     
     def getError(self, target, prediction):
         return np.mean(prediction != target)
@@ -188,11 +179,12 @@ class TMLP(NNAbstract):
     def predict(self):
         pass
     
-    def fit(self, screen, epoch=10, batch_sz=300, test_period=10):
+    def fit(self, screen, epoch=100, batch_sz=100, test_period=10):
         
         x_train, y_train, x_test, y_test = load_train_data()
-        n_batch = x_train.shape[0] // batch_sz
-        y_train_ind = get_indicator(y_train)
+        qtd_train, qtd_test = x_train.shape[0], x_test.shape[0]
+        
+        n_batch = qtd_train // batch_sz
         
         screen.set_maximum_progress(epoch * n_batch)
 
@@ -202,23 +194,27 @@ class TMLP(NNAbstract):
         for i in range(epoch):
             for j in range(n_batch):
                 
+                x_train, y_train = shuffle(x_train, y_train)
+                y_train_ind = get_indicator(y_train)
+                
                 x_test, y_test = shuffle(x_test, y_test)
                 y_test_ind = get_indicator(y_test)
                 
                 x_batch = x_train[j * batch_sz:(j * batch_sz + batch_sz),]
-                y_batch = y_train[j * batch_sz:(j * batch_sz + batch_sz)]
                 y_batch_ind = y_train_ind[j * batch_sz:(j * batch_sz + batch_sz),]
                 
                 self.train(x_batch, y_batch_ind)
                 
-                train_loss, prediction = self.get_prediction(x_batch, y_batch_ind)
-                train_error = self.error_rate(prediction, y_batch)
+                train_loss, prediction = self.get_prediction(x_train, y_train_ind)
+                train_error = self.error_rate(prediction, y_train)
                 
                 if j % test_period == 0:
-                    test_loss, test_prediction = self.get_prediction(x_test[:500,], y_test_ind[:500,])
-                    test_error = self.error_rate(test_prediction, y_test[:500])
-                    
+                    test_loss, test_prediction = self.get_prediction(x_test, y_test_ind)
+                    test_error = self.error_rate(test_prediction, y_test)
+                    test_qtd_correct = classificationRate(y_test, test_prediction)
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, test_error * 100))
+                
+                train_qtd_correct = classificationRate(y_train, prediction)
                 
                 self.train_losses.append(train_loss)
                 self.test_losses.append(test_loss)
@@ -226,28 +222,12 @@ class TMLP(NNAbstract):
                 screen.update_plot(self.train_losses, self.test_losses)
                 screen.update_progress()
                 
-                self.update_info(screen, train_loss, train_error * 100, 0, test_loss, test_error * 100, 0, i, j)
+                self.update_info(screen, 
+                                 train_loss, train_error * 100, '{} / {}'.format(train_qtd_correct, qtd_train),
+                                 test_loss, test_error * 100, '{} / {}'.format(test_qtd_correct, qtd_test), 
+                                 i, j)
                 
                 print("Epoch: {}, Loss: {}, Error: {}".format(i, train_loss, train_error * 100))
                 
         
         return
-    
-if __name__ == '__main__':
-    obj = TMLP()
-    obj.fit()
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

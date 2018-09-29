@@ -13,7 +13,7 @@ from threading import Thread
 
 class NMLPScreen(NNScreenAbstract):
     
-    def __init__(self, title):
+    def __init__(self, title="Numpy - MLP"):
         NNScreenAbstract.__init__(self, title)
         self.progress["maximum"] = 9
         
@@ -31,7 +31,7 @@ class NMLPScreen(NNScreenAbstract):
         
 class TMLPScreen(NNScreenAbstract):
     
-    def __init__(self, title):
+    def __init__(self, title="Theano - MLP"):
         NNScreenAbstract.__init__(self, title)
         
         self.nn = TMLP()
@@ -48,5 +48,5 @@ class TMLPScreen(NNScreenAbstract):
     
     
 if __name__ == "__main__":
-    obj = TMLPScreen("bunda")
+    obj = TMLPScreen()
     obj.mainloop()
