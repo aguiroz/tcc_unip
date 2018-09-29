@@ -26,6 +26,10 @@ class NNInterface(metaclass=ABCMeta):
         raise NotImplementedError
         
     @abstractmethod
+    def update_info(self):
+        raise NotImplementedError
+        
+    @abstractmethod
     def load_weight(self):
         raise NotImplementedError
         
@@ -55,4 +59,8 @@ class NNScreenInterface(metaclass=ABCMeta):
         
     @abstractmethod
     def set_info(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def set_maximum_progress(self):
         raise NotImplementedError

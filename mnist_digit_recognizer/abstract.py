@@ -15,7 +15,7 @@ from util import check_path
 from util import check_model
 
 #screen
-from tkinter import Tk, Label, Button, Entry, Frame
+from tkinter import Tk, Label, Button, Entry, Frame, StringVar
 from tkinter.ttk import Progressbar
 
 #Plotting
@@ -36,6 +36,10 @@ class NNAbstract(NNInterface):
     def create_model(self):
         raise NotImplementedError
     
+    @abstractmethod
+    def update_info(self):
+        raise NotImplementedError
+    
     @classmethod
     def load_weight(cls):
         if cls.model_exist:
@@ -54,6 +58,9 @@ class NNAbstract(NNInterface):
         np.save("b2", cls.b2)
         
         return
+    
+    def update_info(self):
+        raise NotImplementedError
     
     @abstractmethod
     def fit(self):
@@ -80,11 +87,71 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.geometry("900x800+100+100")
         self.create_model()
         self.set_position()
+        self.set_info()
+        return
+    
+    def set_info(self, ammount=0, dataset_size=0, qtd_train=0, qtd_test=0, train_cost=0, train_error=0, train_correct=0, test_cost=0, test_error=0, test_correct=0, iteration=0, batch=0, elapsed=0):
         
+        if ammount != 0 or self.ammount_var.get() == "":
+            self.ammount_var.set(ammount)
+        
+        if dataset_size == 0 or self.dataset_size_var.get() == "":
+            self.dataset_size_var.set(dataset_size)
+        
+        if qtd_train != 0 or self.qtd_train_var.get() == "":
+            self.qtd_train_var.set(qtd_train)
+        
+        if qtd_test != 0 or self.qtd_test_var.get() == "":
+            self.qtd_test_var.set(qtd_test)
+        
+        if train_cost != 0 or self.train_cost_var.get() == "":
+            self.train_cost_var.set(train_cost)
+        
+        if train_error != 0 or self.train_error_var.get() == "":
+            self.train_error_var.set(train_error)
+        
+        if train_correct != 0 or self.train_correct_var.get() == "":
+            self.train_correct_var.set(train_correct)
+        
+        if test_cost != 0 or self.test_cost_var.get() == "":
+            self.test_cost_var.set(test_cost)
+        
+        if test_error != 0 or self.test_error_var.get() == "":
+            self.test_error_var.set(test_error)
+        
+        if test_correct != 0 or self.test_correct_var.get() == "":
+            self.test_correct_var.set(test_correct)
+        
+        if iteration != 0 or self.iteration_var.get() == "":
+            self.iteration_var.set(iteration)
+        
+        if batch != 0 or self.batch_var.get() == "":
+            self.batch_var.set(batch)
+        
+        if elapsed != 0 or self.elapsed_var.get() == "":
+            self.elapsed_var.set(elapsed)
         
         return
     
     def create_model(self):
+        
+        #string vars
+        self.ammount_var = StringVar()
+        self.dataset_size_var = StringVar()
+        self.qtd_train_var = StringVar()
+        self.qtd_test_var = StringVar()
+        self.train_cost_var = StringVar()
+        self.train_error_var = StringVar()
+        self.train_correct_var = StringVar()
+        
+        self.test_cost_var = StringVar()
+        self.test_error_var = StringVar()
+        self.test_correct_var = StringVar()      
+        
+        self.iteration_var = StringVar()
+        self.batch_var = StringVar()
+        self.elapsed_var = StringVar()
+        
         #Labels    
         self.lb1 = Label(self, text="Dataset`s Information: ")
         self.lb2 = Label(self, text="Ammount of Data: ")
@@ -111,19 +178,19 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.lb23 = Label(self, text=" ")
         
         #Entries
-        self.ed1 = Entry(self,)
-        self.ed2 = Entry(self,)
-        self.ed3 = Entry(self,)
-        self.ed4 = Entry(self,)
-        self.ed5 = Entry(self,)
-        self.ed6 = Entry(self,)
-        self.ed7 = Entry(self,)
-        self.ed8 = Entry(self,)
-        self.ed9 = Entry(self,)
-        self.ed10 = Entry(self,)
-        self.ed11 = Entry(self,)
-        self.ed12 = Entry(self,)
-        self.ed13 = Entry(self,)
+        self.ed1 = Entry(self, textvariable=self.ammount_var) # ammount_of_data
+        self.ed2 = Entry(self, textvariable=self.dataset_size_var) # dataset_size
+        self.ed3 = Entry(self, textvariable=self.qtd_train_var) # qtd_train
+        self.ed4 = Entry(self, textvariable=self.qtd_test_var) # qtd_test
+        self.ed5 = Entry(self, textvariable=self.train_cost_var) # train_cost
+        self.ed6 = Entry(self, textvariable=self.train_error_var) # train_error
+        self.ed7 = Entry(self, textvariable=self.train_correct_var) # train_correct
+        self.ed8 = Entry(self, textvariable=self.iteration_var) # iteration
+        self.ed9 = Entry(self, textvariable=self.batch_var) # batch 
+        self.ed10 = Entry(self, textvariable=self.test_cost_var) # test_cost 
+        self.ed11 = Entry(self, textvariable=self.test_error_var) # test_error
+        self.ed12 = Entry(self, textvariable=self.test_correct_var) # test_correct
+        self.ed13 = Entry(self, textvariable=self.elapsed_var) # elapsed_time
         
         #Progress
         self.progress = Progressbar(self, orient='horizontal', length=600, mode='determinate')
@@ -210,16 +277,16 @@ class NNScreenAbstract(NNScreenInterface, Tk):
     def predict(self):
         raise NotImplementedError
     
-    #@abstractmethod
-    def set_info(self):
-        raise NotImplementedError
-    
     @abstractmethod
     def fit(self):
         raise NotImplementedError
     
-    def update_progress(self, value):
-        self.progress["value"] = value
+    def set_maximum_progress(self, value):
+        self.progress["maximum"] = value
+        return
+        
+    def update_progress(self, value=1):
+        self.progress["value"] += value
         return
 
     def update_plot(self, train, test):
