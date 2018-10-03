@@ -176,10 +176,11 @@ class TMLP(NNAbstract):
         screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch)        
         return
     
-    def predict(self):
-        pass
+    def predict(self, x, y):
+        loss, prediction = self.get_prediction(x, y)
+        return loss, prediction
     
-    def fit(self, screen, epoch=100, batch_sz=100, test_period=10):
+    def fit(self, screen, epoch=10, batch_sz=100, test_period=10):
         
         x_train, y_train, x_test, y_test = load_train_data()
         qtd_train, qtd_test = x_train.shape[0], x_test.shape[0]
@@ -205,11 +206,11 @@ class TMLP(NNAbstract):
                 
                 self.train(x_batch, y_batch_ind)
                 
-                train_loss, prediction = self.get_prediction(x_train, y_train_ind)
+                train_loss, prediction = self.predict(x_train, y_train_ind)
                 train_error = self.error_rate(prediction, y_train)
                 
                 if j % test_period == 0:
-                    test_loss, test_prediction = self.get_prediction(x_test, y_test_ind)
+                    test_loss, test_prediction = self.predict(x_test, y_test_ind)
                     test_error = self.error_rate(test_prediction, y_test)
                     test_qtd_correct = classificationRate(y_test, test_prediction)
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, test_error * 100))
