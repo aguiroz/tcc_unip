@@ -7,9 +7,11 @@ Created on Mon Sep 17 20:40:57 2018
 """
 
 from abstract import NNScreenAbstract
-from nn import MLP, TMLP
+from nn import MLP, TMLP, TFMLP
 
 from threading import Thread
+from multiprocessing import Process
+import queue
 
 class NMLPScreen(NNScreenAbstract):
     
@@ -39,6 +41,25 @@ class TMLPScreen(NNScreenAbstract):
         return
     
     def fit(self):
+        p = Process(target=self.nn.fit, args=(None,))
+        p.start()
+        p.join()
+        return
+    
+    def predict(self):
+        pass
+    
+    
+class TFMLPScreen(NNScreenAbstract):
+    
+    def __init__(self, title='Tensorflow - MLP'):
+        NNScreenAbstract.__init__(self, title)
+        
+        self.nn = TFMLP()
+        
+        return
+    
+    def fit(self):
         Thread(target=self.nn.fit, args=[self]).start()
         return
     
@@ -48,5 +69,6 @@ class TMLPScreen(NNScreenAbstract):
     
     
 if __name__ == "__main__":
-    obj = TMLPScreen()
+    obj = TFMLPScreen()
     obj.mainloop()
+    
