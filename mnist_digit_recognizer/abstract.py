@@ -59,9 +59,6 @@ class NNAbstract(NNInterface):
         
         return
     
-    def update_info(self):
-        raise NotImplementedError
-    
     @abstractmethod
     def fit(self):
         raise NotImplementedError
@@ -69,6 +66,9 @@ class NNAbstract(NNInterface):
     @abstractmethod
     def predict(self):
         raise NotImplementedError
+        
+    def error_rate(self, prediction, target):
+        return (np.mean(prediction != target))
     
     def update_progress(self, screen, epoch):
         screen.update_progress(epoch)
