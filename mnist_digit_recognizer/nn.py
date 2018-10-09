@@ -12,6 +12,9 @@ import numpy as np
 import theano
 import theano.tensor as T
 
+#tf
+import tensorflow as tf
+
 from util import load_train_data
 from util import get_indicator, classificationRate
 from util import sigmoid, softmax
@@ -135,9 +138,6 @@ class TMLP(NNAbstract):
         
         return
     
-    def error_rate(self, prediction, target):
-        return (np.mean(prediction != target))
-    
     def create_model(self, lr=0.0005, reg=0.01):
         self.thX = T.matrix('X')
         self.thT = T.matrix('T')
@@ -232,3 +232,104 @@ class TMLP(NNAbstract):
                 
         
         return
+
+##################################################
+        
+class TFMLP(NNAbstract):
+    def __init__(self, model_name='MLP', fw='theano', input_sz=784, hidden_sz=300, output_sz=10):
+        NNAbstract.__init__(self, model_name, fw)
+        
+        self.input_sz = input_sz
+        self.hidden_sz = hidden_sz
+        self.output_sz = output_sz
+                
+        self.create_model()
+        
+        return
+    
+    def create_model(self, lr=0.0005, decay=0.99, momentum=0.9):
+        self.tfX = tf.placeholder(tf.float32, shape=(None, self.input_sz), name='x')
+        self.tfT = tf.placeholder(tf.float32, shape=(None, self.output_sz), name='t')
+        
+        self.w1 = tf.Variable(np.random.randn(self.input_sz, self.hidden_sz), dtype=np.float32)
+        self.b1 = tf.Variable(np.random.randn(self.hidden_sz), dtype=np.float32)
+        self.w2 = tf.Variable(np.random.randn(self.hidden_sz, self.output_sz), dtype=np.float32)
+        self.b2 = tf.Variable(np.random.randn(self.output_sz), dtype=np.float32)
+        
+        self.tfZ = tf.nn.relu(tf.matmul(self.tfX, self.w1) + self.b1)
+        self.tfY = tf.matmul(self.tfZ, self.w2) + self.b2
+        
+        self.loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=self.tfY, labels=self.tfT))
+        self.train = tf.train.RMSPropOptimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
+        self.predict = tf.argmax(self.tfY, 1)
+        self.init = tf.global_variables_initializer()
+        
+        return
+    
+    def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, elapsed=0):
+        screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch)        
+        return
+    
+    def fit(self, screen=None, epoch=10, batch_sz=100, test_period=10):
+        
+        self.create_model()
+        
+        x_train, y_train, x_test, y_test = load_train_data()
+        qtd_train, qtd_test = x_train.shape[0], x_test.shape[0]
+        
+        n_batch = qtd_train // batch_sz
+        
+        screen.set_maximum_progress(epoch * n_batch)
+
+        self.train_losses = []
+        self.test_losses = []
+        with tf.Session() as session:
+            session.run(self.init)
+            for i in range(epoch):
+                x_train, y_train = shuffle(x_train, y_train)
+                y_train_ind = get_indicator(y_train)
+                
+                x_test, y_test = shuffle(x_test, y_test)
+                y_test_ind = get_indicator(y_test)
+                
+                for j in range(n_batch):
+                    x_batch = x_train[j * batch_sz:(j * batch_sz + batch_sz)]
+                    y_batch = y_train_ind[j * batch_sz:(j * batch_sz + batch_sz)]
+                    
+                    session.run(self.train, feed_dict={self.tfX: x_batch, self.tfT: y_batch})
+                    train_loss = session.run(self.loss, feed_dict={self.tfX: x_train, self.tfT: y_train_ind})
+                    prediction = session.run(self.predict, feed_dict={self.tfX: x_train})
+                    train_error = self.error_rate(prediction, y_train)
+                    
+                    if j % test_period == 0:
+                        test_loss = session.run(self.loss, feed_dict={self.tfX: x_test, self.tfT: y_test_ind})
+                        test_prediction = session.run(self.predict, feed_dict={self.tfX: x_test, self.tfT: y_test_ind})
+                        test_error = self.error_rate(test_prediction, y_test)
+                        test_qtd_correct = classificationRate(y_test, test_prediction)
+                        print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, test_error * 100))
+                
+                    train_qtd_correct = classificationRate(y_train, prediction)
+                    
+                    self.train_losses.append(train_loss)
+                    self.test_losses.append(test_loss)
+                     
+                    screen.update_plot(self.train_losses, self.test_losses)
+                    screen.update_progress()
+                    
+                    self.update_info(screen, 
+                                 train_loss, train_error * 100, '{} / {}'.format(train_qtd_correct, qtd_train),
+                                 test_loss, test_error * 100, '{} / {}'.format(test_qtd_correct, qtd_test), 
+                                 i, j)
+                    
+        pass
+    
+    def predict(self):
+        pass
+    
+    
+    
+    
+    
+if __name__ == "__main__":
+    obj = TFMLP()
+    obj.fit(None)
