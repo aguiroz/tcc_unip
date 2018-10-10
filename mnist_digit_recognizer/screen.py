@@ -65,10 +65,36 @@ class TFMLPScreen(NNScreenAbstract):
     
     def predict(self):
         pass
+    
+class TCNNScreen(NNScreenAbstract):
+    
+    def __init__(self, title="Theano - CNN"):
+        NNScreenAbstract.__init__(self, title)
         
+        return
+    
+    def fit(self):
+        pass
+    
+    def predict(self):
+        pass
+        
+class TFCNNScreen(NNScreenAbstract):
+    
+    def __init__(self, title="Tensorflow - CNN"):
+        NNScreenAbstract.__init__(self, title)
+        
+        return
+    
+    def fit(self):
+        pass
+    
+    def predict(self):
+        pass
+
     
     
 if __name__ == "__main__":
-    obj = TFMLPScreen()
+    obj = TFCNNScreen()
     obj.mainloop()
     
