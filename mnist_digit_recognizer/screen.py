@@ -41,10 +41,8 @@ class TMLPScreen(NNScreenAbstract):
         return
     
     def fit(self):
-        p = Process(target=self.nn.fit, args=(None,))
-        p.start()
-        p.join()
-        return
+        Thread(target=self.nn.fit, args=[self]).start()
+	return
     
     def predict(self):
         pass
@@ -95,6 +93,6 @@ class TFCNNScreen(NNScreenAbstract):
     
     
 if __name__ == "__main__":
-    obj = TFCNNScreen()
+    obj = TMLPScreen()
     obj.mainloop()
-    
+   
