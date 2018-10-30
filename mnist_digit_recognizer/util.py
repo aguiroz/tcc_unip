@@ -12,10 +12,10 @@ import os
 def load_train_data():
     mnist = np.loadtxt("data/train.csv", delimiter=",", skiprows=1, dtype=np.float32)
     
-    x_train = np.array([i[1:] / 255 for i in mnist[:5000]])
-    y_train = np.array([i[0] for i in mnist[:5000]])
+    x_train = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[:2000]])
+    y_train = np.array([i[0] for i in mnist[:2000]])
 
-    x_test = np.array([i[1:] / 255 for i in mnist[-1000:]])
+    x_test = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[-1000:]])
     y_test = np.array([i[0] for i in mnist[-1000:]])
     
     return x_train, y_train, x_test, y_test

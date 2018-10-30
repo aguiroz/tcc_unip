@@ -568,10 +568,13 @@ class TFCNN(NNAbstract):
         
         return
     
-    def update_info(self):
-        pass
-    
-    def fit(self, max_iter=20, epoch=10, test_period=10, batch_sz=500):
+    def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, elapsed=0):
+        screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch)        
+        return
+
+    def fit(self, screen=None, epoch=10, test_period=10, batch_sz=500):
+        
+        self.create_model()
         
         x_train, y_train, x_test, y_test = load_train_data()
         x_train = np.expand_dims(x_train, axis=3)
@@ -581,7 +584,7 @@ class TFCNN(NNAbstract):
         
         n_batch = qtd_train // batch_sz
         
-        #screen.set_maximum_progress(epoch * n_batch)
+        screen.set_maximum_progress(epoch * n_batch)
 
         self.train_losses = []
         self.test_losses = []
@@ -589,31 +592,47 @@ class TFCNN(NNAbstract):
         with tf.Session() as sess:
             sess.run(self.init)
             for i in range(epoch):
-                #x_train, y_train, x_test, y_test = shuffle(x_train, y_train, x_test, y_test)
                 
-                y_train_ind = get_indicator(y_train)
-                y_test_ind = get_indicator(y_test)
                 for j in range(n_batch):
                     x_batch = x_train[j * batch_sz:(j * batch_sz + batch_sz),]
                     y_batch = y_train[j * batch_sz:(j * batch_sz + batch_sz),]
-                    y_train_ind_batch = y_train_ind[j * batch_sz:(j * batch_sz + batch_sz)]
                     
                     sess.run(self.train_op, feed_dict={self.X: x_batch, self.T: y_batch})
                     
-                    train_loss = 0 #sess.run(self.cost, feed_dict={self.X: x_batch, self.T: y_train_ind_batch})
-                    prediction = sess.run(self.predict_op, feed_dict={self.X: x_batch})
-                    train_error = self.error_rate(prediction, y_batch)
-                    """
+                    prediction = np.zeros(qtd_train)
+                    train_loss = 0
+                    
+                    for k in range(n_batch):
+                        train_loss += sess.run(self.cost, feed_dict={self.X: x_train[k * batch_sz:(k * batch_sz + batch_sz),], self.T: y_train[k * batch_sz:(k * batch_sz + batch_sz)]})
+                        prediction[k * batch_sz:(k * batch_sz + batch_sz)] = sess.run(self.predict_op, feed_dict={self.X: x_train[k * batch_sz:(k * batch_sz + batch_sz),]})
+                    
+                    train_error = self.error_rate(prediction, y_train)
+                    train_qtd_correct = classificationRate(y_train, prediction)
+                    
                     if j % test_period == 0:
-                        test_loss = 0# sess.run(self.cost, feed_dict={self.tfX: x_test, self.tfT: y_test_ind})
-                        test_prediction = sess.run(self.predict_op, feed_dict={self.X: x_test})
+                        test_loss = 0
+                        test_prediction = np.zeros(qtd_test)
+                        
+                        for k in range(qtd_test // batch_sz):
+                            test_loss += sess.run(self.cost, feed_dict={self.X: x_test[k * batch_sz:(k * batch_sz + batch_sz)], self.T: y_test[k * batch_sz:(k * batch_sz + batch_sz)]})
+                            test_prediction[k * batch_sz:(k * batch_sz + batch_sz)] = sess.run(self.predict_op, feed_dict={self.X: x_test[k * batch_sz:(k * batch_sz + batch_sz)]})
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
-                    """
-                    print("### Test: Epoch: {}, Loss: , Error: {}".format(i, train_error * 100))
+                            
+                    self.train_losses.append(train_loss)
+                    self.test_losses.append(test_loss)
                     
-                    print(j)
-        
+                    screen.update_plot(self.train_losses, self.test_losses)
+                    screen.update_progress()
+                    
+                    self.update_info(screen, 
+                                     train_loss, train_error * 100, '{} / {}'.format(train_qtd_correct, qtd_train),
+                                     test_loss, test_error * 100, '{} / {}'.format(test_qtd_correct, qtd_test), 
+                                     i, j)
+                    
+                    
+                    print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, train_error * 100))
+                            
         return
     
     def predict(self):
@@ -633,10 +652,6 @@ class TRNN(NNAbstract):
         self.epoch = epoch
 
         self.create_model()
-
-        return
-
-    def update_info(self):
 
         return
 
@@ -683,7 +698,7 @@ class TRNN(NNAbstract):
 
     def fit(self, screen=None, epoch=300, batch_sz=50, test_period=10):
 
-        #self.create_model()
+        self.create_model()
         x_train, y_train, x_test, y_test = load_train_data()
         qtd_train, qtd_test = x_train.shape[0], x_test.shape[0]
         n_batch = qtd_train // batch_sz
@@ -691,9 +706,14 @@ class TRNN(NNAbstract):
         y_train_ind = get_indicator(y_train)
         y_test_ind = get_indicator(y_test)
 
+        screen.set_maximum_progress(epoch * n_batch)
+
         with tf.Session() as sess:
 
             sess.run(self.init)
+
+            self.train_losses = []
+            self.test_losses = []
 
             for i in range(self.epoch):
                 for j in range(n_batch):
@@ -712,12 +732,28 @@ class TRNN(NNAbstract):
                         test_prediction = sess.run(self.predict_op, feed_dict={self.X: x_test})
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
+                        
+                    train_qtd_correct = classificationRate(y_train, prediction)
+                
+                    self.train_losses.append(train_loss)
+                    self.test_losses.append(test_loss)
+                    
+                    screen.update_plot(self.train_losses, self.test_losses)
+                    screen.update_progress()
+                    
+                    self.update_info(screen, 
+                                     train_loss, train_error * 100, '{} / {}'.format(train_qtd_correct, qtd_train),
+                                     test_loss, test_error * 100, '{} / {}'.format(test_qtd_correct, qtd_test), 
+                                     i, j)
                     
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, train_loss, train_error * 100))
 		
-        print("Optimization Finished!")
 
 
+        return
+    
+    def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, elapsed=0):
+        screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch)        
         return
 
     def predict(self):
@@ -725,7 +761,7 @@ class TRNN(NNAbstract):
         return
     
 if __name__ == "__main__":
-    obj = TRNN()
+    obj = TFCNN()
     obj.fit()
 
 
