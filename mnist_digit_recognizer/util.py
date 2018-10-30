@@ -12,11 +12,11 @@ import os
 def load_train_data():
     mnist = np.loadtxt("data/train.csv", delimiter=",", skiprows=1, dtype=np.float32)
     
-    x_train = np.array([i[1:] / 255 for i in mnist])
-    y_train = np.array([i[0] for i in mnist])
+    x_train = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[:2000]])
+    y_train = np.array([i[0] for i in mnist[:2000]])
 
-    x_test = np.array([i[1:] / 255 for i in mnist])
-    y_test = np.array([i[0] for i in mnist])
+    x_test = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[-1000:]])
+    y_test = np.array([i[0] for i in mnist[-1000:]])
     
     return x_train, y_train, x_test, y_test
 
@@ -28,6 +28,13 @@ def get_indicator(y):
         ind[i, y[i]] = 1
         
     return ind
+
+def classificationRate(target, prediction):
+        n_correct = 0
+        for i in range(len(target)):
+            if target[i] == prediction[i]:
+                n_correct += 1
+        return n_correct
 
 def sigmoid(x):
     return 1 / 1 + np.exp(-x)
