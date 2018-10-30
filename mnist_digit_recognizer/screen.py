@@ -7,11 +7,9 @@ Created on Mon Sep 17 20:40:57 2018
 """
 
 from abstract import NNScreenAbstract
-from nn import MLP, TMLP, TFMLP
+from nn import MLP, TMLP, TFMLP, TFCNN, TRNN
 
 from threading import Thread
-from multiprocessing import Process
-import queue
 
 class NMLPScreen(NNScreenAbstract):
     
@@ -42,7 +40,7 @@ class TMLPScreen(NNScreenAbstract):
     
     def fit(self):
         Thread(target=self.nn.fit, args=[self]).start()
-	return
+        return
     
     def predict(self):
         pass
@@ -81,18 +79,32 @@ class TFCNNScreen(NNScreenAbstract):
     
     def __init__(self, title="Tensorflow - CNN"):
         NNScreenAbstract.__init__(self, title)
-        
+        self.nn = TFCNN()
         return
     
     def fit(self):
-        pass
+        Thread(target=self.nn.fit, args=[self]).start()
+        return
     
     def predict(self):
         pass
+    
+class TRNNScreen(NNScreenAbstract):
+    
+    def __init__(self, title="Tensorflow - RNN"):
+        NNScreenAbstract.__init__(self, title)
+        self.nn = TRNN()
+        return
 
+    def fit(self):
+        Thread(target=self.nn.fit, args=[self]).start()
+        return
+    
+    def predict(self):
+        pass
     
     
 if __name__ == "__main__":
-    obj = TMLPScreen()
+    obj = TFCNNScreen()
     obj.mainloop()
    
