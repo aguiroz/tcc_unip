@@ -102,9 +102,49 @@ class TRNNScreen(NNScreenAbstract):
     
     def predict(self):
         pass
+
+class LoadData(ScreenInterface, Tk):
     
+    def __init__(self, title="Load Dataset"):        
+        Tk.__init__(self)
+        self.title(title)
+        
+        self.create_model()
+        self.set_position()
+
+        self.geometry("300x120+100+100")
+    
+    def set_position(self):
+        
+        self.lb1.grid(row=0, column=0)
+        self.lb2.grid(row=2, column=0)
+        self.ed1.grid(row=0, column=1)
+        self.ed2.grid(row=2, column=1)
+        self.btn1.grid(row=0, column=2)
+        self.btn2.grid(row=2, column=2)
+        self.btn3.grid(row=5, column=1)
+        self.btn4.grid(row=7, column=1)
+        
+        return
+    
+    def add_action(self):
+        pass
+    
+    def create_model(self):
+        self.lb1 = Label(self, text="Train: ")
+        self.lb2 = Label(self, text="Test: ")
+    
+        self.ed1 = Entry(self,)
+        self.ed2 = Entry(self,)
+    
+        self.btn1 = Button(self, text="Search...")
+        self.btn2 = Button(self, text="Search...")
+        self.btn3 = Button(self, text="Save")
+        self.btn4 = Button(self, text="Cancel")
+    
+        return    
     
 if __name__ == "__main__":
-    obj = TFCNNScreen()
+    obj = TFMLPScreen()
     obj.mainloop()
    
