@@ -15,8 +15,7 @@ import theano.tensor as T
 #tf
 import tensorflow as tf
 
-from util import load_train_data
-from util import get_indicator, classificationRate
+from util import get_indicator, classificationRate, load_train_data
 from sklearn.utils import shuffle
 from abstract import NNAbstract
 

@@ -64,3 +64,19 @@ class NNScreenInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_maximum_progress(self):
         raise NotImplementedError
+        
+class ScreenInterface(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def set_position(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def add_action(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def create_model(self):
+        raise NotImplementedError
+        
+    
