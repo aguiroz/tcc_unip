@@ -9,19 +9,20 @@ Created on Sat Sep  1 18:29:04 2018
 import numpy as np
 
 from abc import abstractmethod
-from interface import NNInterface, NNScreenInterface, ScreenInterface
+from interface import NNInterface, NNScreenInterface
 
+#util
 from util import check_path
 from util import check_model
+from time import time
 
 #screen
-from tkinter import Tk, Label, Button, Entry, Frame, StringVar
+from tkinter import Label, Button, Entry, Frame, StringVar, Toplevel
 from tkinter.ttk import Progressbar
 
 #Plotting
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import time
 
 class NNAbstract(NNInterface):
     
@@ -78,24 +79,42 @@ class NNAbstract(NNInterface):
         screen.update_plot(train, test)
         return
     
-class NNScreenAbstract(NNScreenInterface, Tk):
+class NNScreenAbstract(NNScreenInterface, Toplevel):
     
     @abstractmethod
-    def __init__(self, title):
-        Tk.__init__(self)
-        self.title(title)
+    def __init__(self, title, train=None, test=None):
+        Toplevel.__init__(self)
+        self.title("Tensorflow - CNN")
         self.geometry("900x800+100+100")
         self.create_model()
         self.set_position()
+
+        if train is not None:
+            self.train_data = train
+            self.get_dataset_size(train, 'train')
+        if test is not None:
+            self.test_data = test
+            self.get_dataset_size(test, 'test')
+
         self.set_info()
+
+        
         return
     
-    def set_info(self, ammount=0, dataset_size=0, qtd_train=0, qtd_test=0, train_cost=0, train_error=0, train_correct=0, test_cost=0, test_error=0, test_correct=0, iteration=0, batch=0, elapsed=0):
+    def get_dataset_size(self, data, dataset):
+        if dataset == 'train':
+            self.ammount_var.set(sum(1 for line in data) - 1)
+        else:
+            self.dataset_size_var.set(sum(1 for line in data) - 1)
+            
+        return
+    
+    def set_info(self, ammount=0, dataset_size=0, qtd_train=0, qtd_test=0, train_cost=0, train_error=0, train_correct=0, test_cost=0, test_error=0, test_correct=0, iteration=0, batch=0, start=0):
         
         if ammount != 0 or self.ammount_var.get() == "":
             self.ammount_var.set(ammount)
         
-        if dataset_size == 0 or self.dataset_size_var.get() == "":
+        if dataset_size != 0 or self.dataset_size_var.get() == "":
             self.dataset_size_var.set(dataset_size)
         
         if qtd_train != 0 or self.qtd_train_var.get() == "":
@@ -128,10 +147,30 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         if batch != 0 or self.batch_var.get() == "":
             self.batch_var.set(batch)
         
-        if elapsed != 0 or self.elapsed_var.get() == "":
-            self.elapsed_var.set(elapsed)
+        if start != 0 or self.elapsed_var.get() == "":
+            self.elapsed_var.set(time() - start)
         
         return
+    
+    #qtd_train_var
+    #qtd_test_var
+    
+    def increase_train(self):
+        self.qtd_train_var.set(int(self.qtd_train_var.get()) + 200)
+        return
+    
+    def decrease_train(self):
+        self.qtd_train_var.set(int(self.qtd_train_var.get()) - 200)
+        return
+    
+    def increase_test(self):
+        self.qtd_test_var.set(int(self.qtd_test_var.get()) + 200)
+        return
+    
+    def decrease_test(self):
+        self.qtd_test_var.set(int(self.qtd_test_var.get()) - 200)
+        return
+    
     
     def create_model(self):
         
@@ -154,10 +193,10 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         
         #Labels    
         self.lb1 = Label(self, text="Dataset`s Information: ")
-        self.lb2 = Label(self, text="Ammount of Data: ")
+        self.lb2 = Label(self, text="Train Dataset`s Size: ")
         self.lb3 = Label(self, text="Ammount of Train Data: ")
-        self.lb4 = Label(self, text="Dataset`s Size: ")
-        self.lb5 = Label(self, text="Ammount of Data to Test: ")
+        self.lb4 = Label(self, text="Predict Dataset`s Size: ")
+        self.lb5 = Label(self, text="Ammount of Test Data: ")
         self.lb6 = Label(self, text="Train ")
         self.lb7 = Label(self, text="Cost: ")
         self.lb8 = Label(self, text="Error: ")
@@ -202,10 +241,10 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         
         #Buttons
-        self.btn1 = Button(self, text="-")
-        self.btn2 = Button(self, text="+")
-        self.btn3 = Button(self, text="-")
-        self.btn4 = Button(self, text="+")
+        self.btn1 = Button(self, text="-", command=self.decrease_train)
+        self.btn2 = Button(self, text="+", command=self.increase_train)
+        self.btn3 = Button(self, text="-", command=self.decrease_test)
+        self.btn4 = Button(self, text="+", command=self.increase_test)
         self.btn5 = Button(self, text="Train", command=self.fit)
         self.btn6 = Button(self, text="Predict")
         
@@ -297,43 +336,6 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.graph.draw()
         return
     
-class LoadData(ScreenInterface, Tk):
-    
-    def __init__(self, title="Load Dataset"):        
-        Tk.__init__(self)
-        self.title(title)
-        
-        self.create_model()
-        self.set_position()
 
-        self.geometry("300x120+100+100")
-    
-    def set_position(self):
-        
-        self.lb1.grid(row=0, column=0)
-        self.lb2.grid(row=2, column=0)
-        self.ed1.grid(row=0, column=1)
-        self.ed2.grid(row=2, column=1)
-        self.btn1.grid(row=0, column=2)
-        self.btn2.grid(row=2, column=2)
-        self.btn3.grid(row=5, column=1)
-        self.btn4.grid(row=7, column=1)
-        
-        return
-    
-    def add_action(self):
-        pass
-    
-    def create_model(self):
-        self.lb1 = Label(self, text="Train: ")
-        self.lb2 = Label(self, text="Test: ")
-    
-        self.ed1 = Entry(self,)
-        self.ed2 = Entry(self,)
-    
-        self.btn1 = Button(self, text="Search...")
-        self.btn2 = Button(self, text="Search...")
-        self.btn3 = Button(self, text="Save")
-        self.btn4 = Button(self, text="Cancel")
-    
-        return
+
+

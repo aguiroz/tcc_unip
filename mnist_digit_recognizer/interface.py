@@ -36,6 +36,10 @@ class NNInterface(metaclass=ABCMeta):
     @abstractmethod
     def save_weight(self):
         raise NotImplementedError
+        
+    @abstractmethod
+    def split_data(self):
+        raise NotImplementedError
             
         
         
@@ -69,10 +73,6 @@ class ScreenInterface(metaclass=ABCMeta):
     
     @abstractmethod
     def set_position(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def add_action(self):
         raise NotImplementedError
     
     @abstractmethod
