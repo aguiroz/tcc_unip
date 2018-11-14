@@ -10,16 +10,25 @@ import numpy as np
 import os
 
 def load_train_data():
+    
     mnist = np.loadtxt("data/train.csv", delimiter=",", skiprows=1, dtype=np.float32)
     
-    x_train = np.array([i[1:] / 255 for i in mnist[:2000]])
+    x_train = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[:2000]])
     y_train = np.array([i[0] for i in mnist[:2000]])
 
-    x_test = np.array([i[1:] / 255 for i in mnist[-1000:]])
-    y_test = np.array([i[0] for i in mnist[-1000:]])
+    x_test = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[10000:10500]])
+    y_test = np.array([i[0] for i in mnist[10000:10500]])
     
     return x_train, y_train, x_test, y_test
+    
 
+def load_data():
+    
+    train_data = open('data/train.csv')
+    test_data = open("data/test.csv")
+    
+    return train_data, test_data
+    
 def get_indicator(y):
     y = y.astype(np.int32)
     n = len(y)
