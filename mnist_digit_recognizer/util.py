@@ -8,6 +8,7 @@ Created on Sat Sep  1 16:49:52 2018
 
 import numpy as np
 import os
+from PIL import Image
 
 def load_train_data():
     
@@ -44,6 +45,12 @@ def classificationRate(target, prediction):
             if target[i] == prediction[i]:
                 n_correct += 1
         return n_correct
+    
+def save_prediction(data, prediction, index, fw):
+    path = "./model/{}/results".format(fw)
+    img = Image.fromarray(data.reshape(28,28), 'L')
+    img.save('{}/{}/{}.png'.format(path, int(prediction), index))
+    return
 
 def sigmoid(x):
     return 1 / 1 + np.exp(-x)

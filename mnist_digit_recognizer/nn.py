@@ -8,21 +8,13 @@ Created on Sun Sep  2 12:17:22 2018
 
 import numpy as np
 
-#theano
-import theano
-import theano.tensor as T
-
 #tf
 import tensorflow as tf
 
-from util import get_indicator, classificationRate, load_train_data
+from util import get_indicator, classificationRate
 from time import time
 from sklearn.utils import shuffle
 from abstract import NNAbstract
-
-# CNN
-from theano.tensor.signal import pool
-from theano.tensor.nnet import conv2d
 
 #RNN
 from tensorflow.contrib import rnn
@@ -54,7 +46,7 @@ class TFMLP(NNAbstract):
         
         self.loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=self.tfY, labels=self.tfT))
         self.train = tf.train.RMSPropOptimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
-        self.predict = tf.argmax(self.tfY, 1)
+        self.predict_op = tf.argmax(self.tfY, 1)
         self.init = tf.global_variables_initializer()
         
         return
@@ -64,6 +56,12 @@ class TFMLP(NNAbstract):
                         test_cost=test_cost, test_error=test_error, test_correct=test_correct, 
                         iteration=epoch, batch=batch, start=start)        
         return
+    
+    def predict(self, input_data: open):
+        data = np.loadtxt(input_data.name, delimiter=',', skiprows=1, dtype=np.float32)
+        x = np.array([i for i in data])
+        prediction = self.get_prediction(x)
+        return prediction
     
     def split_data(self, data, qtd_train, qtd_test):
         mnist = np.loadtxt(data.name, delimiter=',', skiprows=1, dtype=np.float32)
@@ -76,9 +74,11 @@ class TFMLP(NNAbstract):
 
     def get_prediction(self, x, session=None):
         if session is None:
+            self.create_model()
             session = tf.Session()
+            session.run(self.init)
         
-        prediction = session.run(self.predict, feed_dict={self.tfX: x})
+        prediction = session.run(self.predict_op, feed_dict={self.tfX: x})
         
         return prediction
 
@@ -117,7 +117,7 @@ class TFMLP(NNAbstract):
                     
                     if j % test_period == 0:
                         test_loss = session.run(self.loss, feed_dict={self.tfX: x_test, self.tfT: y_test_ind})
-                        test_prediction = self.get_prediction(x_test, session) # session.run(self.predict, feed_dict={self.tfX: x_test})
+                        test_prediction = self.get_prediction(x_test, session) 
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
                         print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, test_error * 100))
@@ -228,11 +228,23 @@ class TFCNN(NNAbstract):
         print("Train: {} - {}\nTest: {} - {}".format(x_train.shape, y_train.shape, x_test.shape, y_test.shape))
         
         return x_train, y_train, x_test, y_test
+    
+    def predict(self, input_data: open):
+        data = np.loadtxt(input_data.name, delimiter=',', skiprows=1, dtype=np.float32)
+        x = np.array([i.reshape(28, 28) for i in data])
+        x = np.expand_dims(x, axis=3)
+        prediction = np.zeros(len(x))
+        for i in range(len(x) // self.batch_sz):    
+            print(i)
+            prediction[i * self.batch_sz:(i * self.batch_sz + self.batch_sz)] = self.get_prediction(x[i * self.batch_sz:(i * self.batch_sz + self.batch_sz)])
+        return prediction
 
     def get_prediction(self, x, session=None):
         if session is None:
+            self.create_model()
             session = tf.Session()
-        
+            session.run(self.init)
+            
         prediction = session.run(self.predict_op, feed_dict={self.X: x})
         
         return prediction
@@ -369,12 +381,21 @@ class TFRNN(NNAbstract):
         
         return x_train, y_train, x_test, y_test
 
+    def predict(self, input_data: open):
+        data = np.loadtxt(input_data.name, delimiter=',', skiprows=1, dtype=np.float32)
+        x = np.array([i.reshape(28, 28) for i in data])
+        prediction = self.get_prediction(x)
+        
+        return prediction
+    
     def get_prediction(self, x, session=None):
         if session is None:
             session = tf.Session()
+            session.run(self.init)
         prediction = session.run(self.predict_op, feed_dict={self.X: x})
         
         return prediction
+    
  
     def fit(self, screen, train_data, qtd_train, qtd_test, epoch=300, batch_sz=50, test_period=10):
 
@@ -404,13 +425,13 @@ class TFRNN(NNAbstract):
                     sess.run(self.train_op, feed_dict={self.X: x_batch, self.Y: y_batch})
                     
                     train_loss = sess.run(self.loss_op, feed_dict={self.X: x_train, self.Y: y_train_ind})
-                    prediction = self.get_prediction(x_train, sess) #sess.run(self.predict_op, feed_dict={self.X: x_train})
+                    prediction = self.get_prediction(x_train, sess) 
                     train_error = self.error_rate(prediction, y_train)
                     
                     
                     if j % test_period == 0:
                         test_loss = sess.run(self.loss_op, feed_dict={self.X: x_test, self.Y: y_test_ind})
-                        test_prediction = self.get_prediction(x_test, sess) #sess.run(self.predict_op, feed_dict={self.X: x_test})
+                        test_prediction = self.get_prediction(x_test, sess) 
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
                         
@@ -436,11 +457,3 @@ class TFRNN(NNAbstract):
     def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, start=0):
         screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch, start=start)        
         return
-
-    
-if __name__ == "__main__":
-    obj = TFCNN()
-    obj.fit()
-
-
-

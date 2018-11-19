@@ -41,24 +41,13 @@ class NNAbstract(NNInterface):
     def update_info(self):
         raise NotImplementedError
     
-    @classmethod
-    def load_weight(cls):
-        if cls.model_exist:
-            cls.w1 = np.load("model/{}/w1".format(cls.model_name))
-            cls.b1 = np.load("model/{}/b1".format(cls.mmodel_name))
-            cls.w2 = np.load("model/{}/w2".format(cls.model_name))
-            cls.b2 = np.load("model/{}/b2".format(cls.model_name))
-        
-        return
+    @abstractmethod
+    def load_weight(self):
+        raise NotImplementedError
     
-    @classmethod
-    def save_weight(cls):
-        np.save("w1", cls.w1)
-        np.save("b1", cls.b1)
-        np.save("w2", cls.w2)
-        np.save("b2", cls.b2)
-        
-        return
+    @abstractmethod
+    def save_weight(self):
+        raise NotImplementedError
     
     @abstractmethod
     def fit(self):
@@ -66,6 +55,10 @@ class NNAbstract(NNInterface):
     
     @abstractmethod
     def get_prediction(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def predict(self):
         raise NotImplementedError
         
     def error_rate(self, prediction, target):
@@ -248,7 +241,7 @@ class NNScreenAbstract(NNScreenInterface, Toplevel):
         self.btn3 = Button(self, text="-", command=self.decrease_test)
         self.btn4 = Button(self, text="+", command=self.increase_test)
         self.btn5 = Button(self, text="Train", command=self.fit)
-        self.btn6 = Button(self, text="Predict")
+        self.btn6 = Button(self, text="Predict", command=self.predict)
         
         return
     
