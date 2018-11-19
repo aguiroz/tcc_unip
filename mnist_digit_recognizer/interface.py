@@ -18,6 +18,10 @@ class NNInterface(metaclass=ABCMeta):
         raise NotImplementedError
         
     @abstractmethod
+    def predict(self):
+        raise NotImplementedError
+        
+    @abstractmethod
     def update_plot(self):
         raise NotImplementedError
         
