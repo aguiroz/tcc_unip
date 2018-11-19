@@ -8,7 +8,6 @@ Created on Mon Sep 17 20:40:57 2018
 
 from abstract import NNScreenAbstract
 from nn import TFMLP, TFCNN, TFRNN
-from util import load_data
 from threading import Thread
 from interface import ScreenInterface
 
@@ -25,7 +24,7 @@ class TFMLPScreen(NNScreenAbstract):
     def fit(self):
         Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get())]).start()
         return
-    
+
     def predict(self):
         pass
 
@@ -33,7 +32,7 @@ class TFMLPScreen(NNScreenAbstract):
 class TFCNNScreen(NNScreenAbstract):
     
     def __init__(self, title="Tensorflow - CNN", train=None, test=None):
-        NNScreenAbstract.__init__(self, title, train, test)
+        NNScreenAbstract.__init__(self, title, train=train, test=test)
         self.nn = TFCNN()
         return
     
@@ -69,26 +68,20 @@ class MainScreen(ScreenInterface, Tk):
         self.title("Home")
         self.geometry("750x200+100+100")
         
-        train, test = load_data()
-        
-        self.train_data = train
-        self.test_data = test
-
-        
         return
     
     def load_mlp(self):
-        obj = TFMLPScreen(self, train=self.train_data, test=self.test_data)
+        objMlp = TFMLPScreen(train=self.loadData.train_data, test=self.loadData.test_data)
         
         return
     
     def load_cnn(self):
-        obj = TFCNNScreen(train=self.train_data, test=self.test_data)
+        objCnn = TFCNNScreen(train=self.loadData.train_data, test=self.loadData.test_data)
         
         return
     
     def load_rnn(self):
-        obj = TFRNNScreen(train=self.train_data, test=self.test_data)
+        objRnn = TFRNNScreen(train=self.loadData.train_data, test=self.loadData.test_data)
 
         
         return
@@ -174,12 +167,12 @@ class LoadData(ScreenInterface, Toplevel):
         return
     
     def load_train_data(self):
-        self.train_data = filedialog.askopenfile(initialdir=".", title="Select File", filetypes=(("csv files", "*.csv"),("all files", "*.*")))
+        self.train_data = filedialog.askopenfile(initialdir="./data", title="Select File", filetypes=(("csv files", "*.csv"),("all files", "*.*")))
         self.train_var.set(self.train_data.name)
         return
     
     def load_test_data(self):
-        self.test_data = filedialog.askopenfile(initialdir=".", title="Select File", filetypes=(("csv files", "*.csv"),("all files", "*.*")))
+        self.test_data = filedialog.askopenfile(initialdir="./data", title="Select File", filetypes=(("csv files", "*.csv"),("all files", "*.*")))
         self.test_var.set(self.test_data.name)
         return
     

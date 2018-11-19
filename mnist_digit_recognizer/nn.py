@@ -78,9 +78,7 @@ class TFMLP(NNAbstract):
         print("*"*500, qtd_train, qtd_test)
         self.create_model()
         
-        #x_train, y_train, x_test, y_test = load_train_data()
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
-        
         
         n_batch = qtd_train // batch_sz
         

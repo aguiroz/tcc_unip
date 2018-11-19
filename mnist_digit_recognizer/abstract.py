@@ -84,7 +84,7 @@ class NNScreenAbstract(NNScreenInterface, Toplevel):
     @abstractmethod
     def __init__(self, title, train=None, test=None):
         Toplevel.__init__(self)
-        self.title("Tensorflow - CNN")
+        self.title(title)
         self.geometry("900x800+100+100")
         self.create_model()
         self.set_position()
