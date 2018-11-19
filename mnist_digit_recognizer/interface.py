@@ -14,7 +14,7 @@ class NNInterface(metaclass=ABCMeta):
         raise NotImplementedError
     
     @abstractmethod
-    def predict(self):
+    def get_prediction(self):
         raise NotImplementedError
         
     @abstractmethod
