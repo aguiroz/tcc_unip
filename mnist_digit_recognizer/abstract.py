@@ -147,8 +147,10 @@ class NNScreenAbstract(NNScreenInterface, Toplevel):
         if batch != 0 or self.batch_var.get() == "":
             self.batch_var.set(batch)
         
-        if start != 0 or self.elapsed_var.get() == "":
+        if start != 0:
             self.elapsed_var.set(time() - start)
+        else:
+            self.elapsed_var.set(0)
         
         return
     
