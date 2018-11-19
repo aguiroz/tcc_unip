@@ -11,7 +11,7 @@ import numpy as np
 #tf
 import tensorflow as tf
 
-from util import get_indicator, classificationRate
+from util import get_indicator, classificationRate, check_model_data, load_model_data, save_model_data
 from time import time
 from sklearn.utils import shuffle
 from abstract import NNAbstract
@@ -32,14 +32,53 @@ class TFMLP(NNAbstract):
         
         return
     
+    def load_weight(self):
+        model = self.model_name
+        
+        if not check_model_data(model, "w1"):
+            return False
+        if not check_model_data(model, "b1"):
+            return False
+        if not check_model_data(model, "w2"):
+            return False
+        if not check_model_data(model, "b2"):
+            return False
+        
+        w1 = tf.Variable(load_model_data(model, "w1"))
+        b1 = tf.Variable(load_model_data(model, "b1"))
+        w2 = tf.Variable(load_model_data(model, "w2"))
+        b2 = tf.Variable(load_model_data(model, "b2"))
+        
+        print(w1.shape, "eltjgnvr"*100)
+        print(b1.shape)
+        print(w2.shape)
+        print(b2.shape)
+        
+        self.w1 = tf.Variable(w1)
+        self.b1 = tf.Variable(b1)
+        self.w2 = tf.Variable(w2)
+        self.b2 = tf.Variable(b2)
+        
+        return True
+    
+    def save_weight(self, sess):
+        model = self.model_name
+        save_model_data(self.w1.eval(sess), model, "w1")
+        save_model_data(self.b1.eval(sess), model, "b1")
+        save_model_data(self.w2.eval(sess), model, "w2")
+        save_model_data(self.b2.eval(sess), model, "b2")
+        return
+    
     def create_model(self, lr=0.0005, decay=0.99, momentum=0.9):
         self.tfX = tf.placeholder(tf.float32, shape=(None, self.input_sz), name='x')
         self.tfT = tf.placeholder(tf.float32, shape=(None, self.output_sz), name='t')
         
-        self.w1 = tf.Variable(np.random.randn(self.input_sz, self.hidden_sz), dtype=np.float32)
-        self.b1 = tf.Variable(np.random.randn(self.hidden_sz), dtype=np.float32)
-        self.w2 = tf.Variable(np.random.randn(self.hidden_sz, self.output_sz), dtype=np.float32)
-        self.b2 = tf.Variable(np.random.randn(self.output_sz), dtype=np.float32)
+        if not self.load_weight():
+            print("loading...")
+            self.w1 = tf.Variable(np.random.randn(self.input_sz, self.hidden_sz), dtype=np.float32)
+            self.b1 = tf.Variable(np.random.randn(self.hidden_sz), dtype=np.float32)
+            self.w2 = tf.Variable(np.random.randn(self.hidden_sz, self.output_sz), dtype=np.float32)
+            self.b2 = tf.Variable(np.random.randn(self.output_sz), dtype=np.float32)
         
         self.tfZ = tf.nn.relu(tf.matmul(self.tfX, self.w1) + self.b1)
         self.tfY = tf.matmul(self.tfZ, self.w2) + self.b2
@@ -48,6 +87,7 @@ class TFMLP(NNAbstract):
         self.train = tf.train.RMSPropOptimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
         self.predict_op = tf.argmax(self.tfY, 1)
         self.init = tf.global_variables_initializer()
+        
         
         return
     
@@ -134,6 +174,7 @@ class TFMLP(NNAbstract):
                                  train_loss, train_error * 100, '{} / {}'.format(train_qtd_correct, qtd_train),
                                  test_loss, test_error * 100, '{} / {}'.format(test_qtd_correct, qtd_test), 
                                  i, j, start)
+            self.save_weight(session)
                     
         return
     

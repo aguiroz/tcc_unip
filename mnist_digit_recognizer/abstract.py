@@ -13,7 +13,6 @@ from interface import NNInterface, NNScreenInterface
 
 #util
 from util import check_path
-from util import check_model
 from time import time
 
 #screen
@@ -30,7 +29,6 @@ class NNAbstract(NNInterface):
     def __init__(self, model_name, fw):
         check_path(model_name)
         self.model_name = model_name
-        self.model_exist = check_model(model_name, fw)
         return
     
     @abstractmethod
