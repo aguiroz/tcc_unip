@@ -74,6 +74,14 @@ class TFMLP(NNAbstract):
         y_test = np.array([i[0]  for i in mnist[qtd_train:qtd_train + qtd_test]])
         return x_train, y_train, x_test, y_test
 
+    def get_prediction(self, x, session=None):
+        if session is None:
+            session = tf.Session()
+        
+        prediction = session.run(self.predict, feed_dict={self.tfX: x})
+        
+        return prediction
+
     def fit(self, screen, train_data, qtd_train, qtd_test, test_period=10, epoch=10, batch_sz=100):
         print("*"*500, qtd_train, qtd_test)
         self.create_model()
@@ -104,12 +112,12 @@ class TFMLP(NNAbstract):
                     
                     session.run(self.train, feed_dict={self.tfX: x_batch, self.tfT: y_batch})
                     train_loss = session.run(self.loss, feed_dict={self.tfX: x_train, self.tfT: y_train_ind})
-                    prediction = session.run(self.predict, feed_dict={self.tfX: x_train})
+                    prediction = self.get_prediction(x_train, session)
                     train_error = self.error_rate(prediction, y_train)
                     
                     if j % test_period == 0:
                         test_loss = session.run(self.loss, feed_dict={self.tfX: x_test, self.tfT: y_test_ind})
-                        test_prediction = session.run(self.predict, feed_dict={self.tfX: x_test})
+                        test_prediction = self.get_prediction(x_test, session) # session.run(self.predict, feed_dict={self.tfX: x_test})
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
                         print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, test_error * 100))
@@ -129,8 +137,6 @@ class TFMLP(NNAbstract):
                     
         return
     
-    def predict(self):
-        pass
     
     
 ##################################################
@@ -217,9 +223,19 @@ class TFCNN(NNAbstract):
         x_train = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[:qtd_train]])
         y_train = np.array([i[0] for i in mnist[:qtd_train]])
         x_test = np.array([i[1:].reshape(28, 28) / 255 for i in mnist[qtd_train:qtd_train + qtd_test]])
-        y_test = np.array(i[0] for i in mnist[qtd_train:qtd_train + qtd_test])
+        y_test = np.array([i[0] for i in mnist[qtd_train:qtd_train + qtd_test]])
+        
+        print("Train: {} - {}\nTest: {} - {}".format(x_train.shape, y_train.shape, x_test.shape, y_test.shape))
         
         return x_train, y_train, x_test, y_test
+
+    def get_prediction(self, x, session=None):
+        if session is None:
+            session = tf.Session()
+        
+        prediction = session.run(self.predict_op, feed_dict={self.X: x})
+        
+        return prediction
 
     def fit(self, screen, train_data, qtd_train, qtd_test, epoch=25, test_period=10, batch_sz=500):
         
@@ -253,7 +269,7 @@ class TFCNN(NNAbstract):
                     
                     for k in range(n_batch):
                         train_loss += sess.run(self.cost, feed_dict={self.X: x_train[k * batch_sz:(k * batch_sz + batch_sz),], self.T: y_train[k * batch_sz:(k * batch_sz + batch_sz)]})
-                        prediction[k * batch_sz:(k * batch_sz + batch_sz)] = sess.run(self.predict_op, feed_dict={self.X: x_train[k * batch_sz:(k * batch_sz + batch_sz)]})
+                        prediction[k * batch_sz:(k * batch_sz + batch_sz)] = self.get_prediction(x_train[k * batch_sz:(k * batch_sz + batch_sz)], sess) 
                     
                     train_error = self.error_rate(prediction, y_train)
                     train_qtd_correct = classificationRate(y_train, prediction)
@@ -263,8 +279,8 @@ class TFCNN(NNAbstract):
                         test_prediction = np.zeros(qtd_test)
                         
                         for k in range(qtd_test // batch_sz):
-                            test_loss += sess.run(self.cost, feed_dict={self.X: x_test[k * batch_sz:(k * batch_sz + batch_sz)], self.T: y_test[k * batch_sz:(k * batch_sz + batch_sz)]})
-                            test_prediction[k * batch_sz:(k * batch_sz + batch_sz)] = sess.run(self.predict_op, feed_dict={self.X: x_test[k * batch_sz:(k * batch_sz + batch_sz)]})
+                            test_loss += sess.run(self.cost, feed_dict={self.X: x_test[k * batch_sz:(k * batch_sz + batch_sz),], self.T: y_test[k * batch_sz:(k * batch_sz + batch_sz)]})
+                            test_prediction[k * batch_sz:(k * batch_sz + batch_sz)] = self.get_prediction(x_test[k * batch_sz:(k * batch_sz + batch_sz)], sess) 
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
                             
@@ -284,8 +300,6 @@ class TFCNN(NNAbstract):
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, train_error * 100))
         return
     
-    def predict(self):
-        pass
     
 ##################################################
     
@@ -355,6 +369,13 @@ class TFRNN(NNAbstract):
         
         return x_train, y_train, x_test, y_test
 
+    def get_prediction(self, x, session=None):
+        if session is None:
+            session = tf.Session()
+        prediction = session.run(self.predict_op, feed_dict={self.X: x})
+        
+        return prediction
+ 
     def fit(self, screen, train_data, qtd_train, qtd_test, epoch=300, batch_sz=50, test_period=10):
 
         self.create_model()
@@ -383,13 +404,13 @@ class TFRNN(NNAbstract):
                     sess.run(self.train_op, feed_dict={self.X: x_batch, self.Y: y_batch})
                     
                     train_loss = sess.run(self.loss_op, feed_dict={self.X: x_train, self.Y: y_train_ind})
-                    prediction = sess.run(self.predict_op, feed_dict={self.X: x_train})
+                    prediction = self.get_prediction(x_train, sess) #sess.run(self.predict_op, feed_dict={self.X: x_train})
                     train_error = self.error_rate(prediction, y_train)
                     
                     
                     if j % test_period == 0:
                         test_loss = sess.run(self.loss_op, feed_dict={self.X: x_test, self.Y: y_test_ind})
-                        test_prediction = sess.run(self.predict_op, feed_dict={self.X: x_test})
+                        test_prediction = self.get_prediction(x_test, sess) #sess.run(self.predict_op, feed_dict={self.X: x_test})
                         test_error = self.error_rate(test_prediction, y_test)
                         test_qtd_correct = classificationRate(y_test, test_prediction)
                         
@@ -416,9 +437,6 @@ class TFRNN(NNAbstract):
         screen.set_info(train_cost=train_cost, train_error=train_error, train_correct=tain_correct, test_cost=test_cost, test_error=test_error, test_correct=test_correct, iteration=epoch, batch=batch, start=start)        
         return
 
-    def predict(self):
-
-        return
     
 if __name__ == "__main__":
     obj = TFCNN()

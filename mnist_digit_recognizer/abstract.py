@@ -65,7 +65,7 @@ class NNAbstract(NNInterface):
         raise NotImplementedError
     
     @abstractmethod
-    def predict(self):
+    def get_prediction(self):
         raise NotImplementedError
         
     def error_rate(self, prediction, target):
