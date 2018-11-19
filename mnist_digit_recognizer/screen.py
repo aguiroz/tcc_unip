@@ -10,6 +10,9 @@ from abstract import NNScreenAbstract
 from nn import TFMLP, TFCNN, TFRNN
 from threading import Thread
 from interface import ScreenInterface
+from util import save_prediction
+
+import numpy as np
 
 from tkinter import Tk, Toplevel, Label, Button, Entry, filedialog, StringVar
     
@@ -25,8 +28,14 @@ class TFMLPScreen(NNScreenAbstract):
         Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get())]).start()
         return
 
-    def predict(self):
-        pass
+    def predict(self):        
+        prediction = self.nn.predict(self.test_data)
+        data = np.loadtxt(self.test_data.name, dtype=np.uint8, skiprows=1, delimiter=',')
+        x = np.array([i.reshape(28, 28) for i in data])
+        
+        for i in range(x.shape[0]):
+            save_prediction(x[i], prediction[i], i, self.nn.model_name)
+        return
 
         
 class TFCNNScreen(NNScreenAbstract):
@@ -41,8 +50,14 @@ class TFCNNScreen(NNScreenAbstract):
         return
     
     def predict(self):
-        pass
-    
+        prediction = self.nn.predict(self.test_data)
+        data = np.loadtxt(self.test_data.name, dtype=np.uint8, skiprows=1, delimiter=',')
+        x = np.array([i.reshape(28, 28) for i in data])
+        
+        for i in range(x.shape[0]):
+            save_prediction(x[i], prediction[i], i, self.nn.model_name)
+        return
+
 class TFRNNScreen(NNScreenAbstract):
     
     def __init__(self, title="Tensorflow - RNN", train=None, test=None):
@@ -55,7 +70,13 @@ class TFRNNScreen(NNScreenAbstract):
         return
     
     def predict(self):
-        pass
+        prediction = self.nn.predict(self.test_data)
+        data = np.loadtxt(self.test_data.name, dtype=np.uint8, skiprows=1, delimiter=',')
+        x = np.array([i.reshape(28, 28) for i in data])
+        
+        for i in range(x.shape[0]):
+            save_prediction(x[i], prediction[i], i, self.nn.model_name)
+        return
 
     
 class MainScreen(ScreenInterface, Tk):
