@@ -11,17 +11,17 @@ import numpy as np
 from abc import abstractmethod
 from interface import NNInterface, NNScreenInterface
 
-from util import check_path
-from util import check_model
+#util
+from util import check_path, save_model_data, load_model_data, check_model_data
+from time import time
 
 #screen
-from tkinter import Tk, Label, Button, Entry, Frame, StringVar
+from tkinter import Label, Button, Entry, Frame, StringVar, Toplevel
 from tkinter.ttk import Progressbar
 
 #Plotting
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import time
 
 class NNAbstract(NNInterface):
     
@@ -29,7 +29,6 @@ class NNAbstract(NNInterface):
     def __init__(self, model_name, fw):
         check_path(model_name)
         self.model_name = model_name
-        self.model_exist = check_model(model_name, fw)
         return
     
     @abstractmethod
@@ -40,32 +39,44 @@ class NNAbstract(NNInterface):
     def update_info(self):
         raise NotImplementedError
     
-    @classmethod
-    def load_weight(cls):
-        if cls.model_exist:
-            cls.w1 = np.load("model/{}/w1".format(cls.model_name))
-            cls.b1 = np.load("model/{}/b1".format(cls.mmodel_name))
-            cls.w2 = np.load("model/{}/w2".format(cls.model_name))
-            cls.b2 = np.load("model/{}/b2".format(cls.model_name))
-        
-        return
+    @abstractmethod
+    def load_weight(self):
+        raise NotImplementedError
     
-    @classmethod
-    def save_weight(cls):
-        np.save("w1", cls.w1)
-        np.save("b1", cls.b1)
-        np.save("w2", cls.w2)
-        np.save("b2", cls.b2)
-        
-        return
+    @abstractmethod
+    def save_weight(self):
+        raise NotImplementedError
     
     @abstractmethod
     def fit(self):
         raise NotImplementedError
     
     @abstractmethod
-    def predict(self):
+    def get_prediction(self):
         raise NotImplementedError
+        
+    
+    def save_train_data(self):
+    
+        model = self.model_name
+        save_model_data(self.train_losses, model, 'train_loss')
+        save_model_data(self.test_losses, model, 'test_loss')
+        
+        return
+    
+    def load_train_data(self):
+        model = self.model_name
+        
+        if not check_model_data(model, 'train_loss'):
+            return False
+        
+        if not check_model_data(model, 'test_loss'):
+            return False
+        
+        self.train_losses = [i for i in load_model_data(model, 'train_loss')]
+        self.test_losses = [i for i in load_model_data(model, 'test_loss')]
+        
+        return True
         
     def error_rate(self, prediction, target):
         return (np.mean(prediction != target))
@@ -78,24 +89,42 @@ class NNAbstract(NNInterface):
         screen.update_plot(train, test)
         return
     
-class NNScreenAbstract(NNScreenInterface, Tk):
+class NNScreenAbstract(NNScreenInterface, Toplevel):
     
     @abstractmethod
-    def __init__(self, title):
-        Tk.__init__(self)
+    def __init__(self, title, train=None, test=None):
+        Toplevel.__init__(self)
         self.title(title)
         self.geometry("900x800+100+100")
         self.create_model()
         self.set_position()
+
+        if train is not None:
+            self.train_data = train
+            self.get_dataset_size(train, 'train')
+        if test is not None:
+            self.test_data = test
+            self.get_dataset_size(test, 'test')
+
         self.set_info()
+
+        
         return
     
-    def set_info(self, ammount=0, dataset_size=0, qtd_train=0, qtd_test=0, train_cost=0, train_error=0, train_correct=0, test_cost=0, test_error=0, test_correct=0, iteration=0, batch=0, elapsed=0):
+    def get_dataset_size(self, data, dataset):
+        if dataset == 'train':
+            self.ammount_var.set(sum(1 for line in data) - 1)
+        else:
+            self.dataset_size_var.set(sum(1 for line in data) - 1)
+            
+        return
+    
+    def set_info(self, ammount=0, dataset_size=0, qtd_train=0, qtd_test=0, train_cost=0, train_error=0, train_correct=0, test_cost=0, test_error=0, test_correct=0, iteration=0, batch=0, start=0):
         
         if ammount != 0 or self.ammount_var.get() == "":
             self.ammount_var.set(ammount)
         
-        if dataset_size == 0 or self.dataset_size_var.get() == "":
+        if dataset_size != 0 or self.dataset_size_var.get() == "":
             self.dataset_size_var.set(dataset_size)
         
         if qtd_train != 0 or self.qtd_train_var.get() == "":
@@ -128,10 +157,32 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         if batch != 0 or self.batch_var.get() == "":
             self.batch_var.set(batch)
         
-        if elapsed != 0 or self.elapsed_var.get() == "":
-            self.elapsed_var.set(elapsed)
+        if start != 0:
+            self.elapsed_var.set(time() - start)
+        else:
+            self.elapsed_var.set(0)
         
         return
+    
+    #qtd_train_var
+    #qtd_test_var
+    
+    def increase_train(self):
+        self.qtd_train_var.set(int(self.qtd_train_var.get()) + 200)
+        return
+    
+    def decrease_train(self):
+        self.qtd_train_var.set(int(self.qtd_train_var.get()) - 200)
+        return
+    
+    def increase_test(self):
+        self.qtd_test_var.set(int(self.qtd_test_var.get()) + 200)
+        return
+    
+    def decrease_test(self):
+        self.qtd_test_var.set(int(self.qtd_test_var.get()) - 200)
+        return
+    
     
     def create_model(self):
         
@@ -154,10 +205,10 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         
         #Labels    
         self.lb1 = Label(self, text="Dataset`s Information: ")
-        self.lb2 = Label(self, text="Ammount of Data: ")
+        self.lb2 = Label(self, text="Train Dataset`s Size: ")
         self.lb3 = Label(self, text="Ammount of Train Data: ")
-        self.lb4 = Label(self, text="Dataset`s Size: ")
-        self.lb5 = Label(self, text="Ammount of Data to Test: ")
+        self.lb4 = Label(self, text="Predict Dataset`s Size: ")
+        self.lb5 = Label(self, text="Ammount of Test Data: ")
         self.lb6 = Label(self, text="Train ")
         self.lb7 = Label(self, text="Cost: ")
         self.lb8 = Label(self, text="Error: ")
@@ -202,12 +253,12 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         
         #Buttons
-        self.btn1 = Button(self, text="-")
-        self.btn2 = Button(self, text="+")
-        self.btn3 = Button(self, text="-")
-        self.btn4 = Button(self, text="+")
+        self.btn1 = Button(self, text="-", command=self.decrease_train)
+        self.btn2 = Button(self, text="+", command=self.increase_train)
+        self.btn3 = Button(self, text="-", command=self.decrease_test)
+        self.btn4 = Button(self, text="+", command=self.increase_test)
         self.btn5 = Button(self, text="Train", command=self.fit)
-        self.btn6 = Button(self, text="Predict")
+        self.btn6 = Button(self, text="Predict", command=self.predict)
         
         return
     
@@ -296,3 +347,7 @@ class NNScreenAbstract(NNScreenInterface, Tk):
         self.ax.plot(test, color='blue')
         self.graph.draw()
         return
+    
+
+
+
