@@ -24,7 +24,7 @@ class TFMLPScreen(NNScreenAbstract):
     
     def __init__(self, title='Tensorflow - MLP', train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
-        self.nn = TFMLP()
+        self.nn = TFMLP(self)
         
         return
     
@@ -46,7 +46,7 @@ class TFCNNScreen(NNScreenAbstract):
     
     def __init__(self, title="Tensorflow - CNN", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
-        self.nn = TFCNN()
+        self.nn = TFCNN(self)
         return
     
     def fit(self):
@@ -66,7 +66,7 @@ class TFRNNScreen(NNScreenAbstract):
     
     def __init__(self, title="Tensorflow - RNN", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train, test)
-        self.nn = TFRNN()
+        self.nn = TFRNN(self)
         return
 
     def fit(self):
@@ -339,6 +339,6 @@ class ReportScreen(ScreenInterface, Toplevel):
     
 if __name__ == "__main__":
    
-    obj = ReportScreen()
+    obj = MainScreen()
     obj.mainloop()
    

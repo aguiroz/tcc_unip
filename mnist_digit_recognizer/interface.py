@@ -42,6 +42,14 @@ class NNInterface(metaclass=ABCMeta):
         raise NotImplementedError
         
     @abstractmethod
+    def save_train_data(self):
+        raise NotImplementedError
+        
+    @abstractmethod
+    def load_train_data(self):
+        raise NotImplementedError
+        
+    @abstractmethod
     def split_data(self):
         raise NotImplementedError
             

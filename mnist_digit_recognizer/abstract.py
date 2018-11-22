@@ -12,7 +12,7 @@ from abc import abstractmethod
 from interface import NNInterface, NNScreenInterface
 
 #util
-from util import check_path
+from util import check_path, save_model_data, load_model_data, check_model_data
 from time import time
 
 #screen
@@ -55,9 +55,28 @@ class NNAbstract(NNInterface):
     def get_prediction(self):
         raise NotImplementedError
         
-    @abstractmethod
-    def predict(self):
-        raise NotImplementedError
+    
+    def save_train_data(self):
+    
+        model = self.model_name
+        save_model_data(self.train_losses, model, 'train_loss')
+        save_model_data(self.test_losses, model, 'test_loss')
+        
+        return
+    
+    def load_train_data(self):
+        model = self.model_name
+        
+        if not check_model_data(model, 'train_loss'):
+            return False
+        
+        if not check_model_data(model, 'test_loss'):
+            return False
+        
+        self.train_losses = [i for i in load_model_data(model, 'train_loss')]
+        self.test_losses = [i for i in load_model_data(model, 'test_loss')]
+        
+        return True
         
     def error_rate(self, prediction, target):
         return (np.mean(prediction != target))
