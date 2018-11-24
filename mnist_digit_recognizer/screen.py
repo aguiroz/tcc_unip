@@ -10,7 +10,7 @@ from abstract import NNScreenAbstract
 from nn import TFMLP, TFCNN, TFRNN
 from threading import Thread
 from interface import ScreenInterface
-from util import save_prediction
+from util import save_prediction, load_model_data
 
 #Plotting
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -127,7 +127,7 @@ class MainScreen(ScreenInterface, Tk):
         self.btn3 = Button(self, text="Carregar", command=self.load_cnn)
         self.btn4 = Button(self, text="Carregar", command=self.load_rnn
                            )
-        self.btn5 = Button(self, text="Carregar")
+        self.btn5 = Button(self, text="Carregar", command=ReportScreen)
         self.btn6 = Button(self, text="Carregar")
         self.btn7 = Button(self, text="Sair", command=self.destroy)
         
@@ -228,7 +228,36 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.title(title)
         self.geometry("900x700+100+100")
 
+        self.load_data()
+        self.set_data()
+
+        return
+    
+    def load_data(self):
         
+        self.mlp = load_model_data('MLP', 'train_data')
+        #self.cnn = load_model_data('CNN', 'train_data')
+        #self.rnn = load_model_data('RNN', 'train_data')
+        
+        return
+    
+    def set_data(self):
+        
+        self.mlp_cost.set(self.mlp[-1, 2][0])
+        self.mlp_rate.set("{} %".format(self.mlp[-1, 3][0] / self.mlp[0, -1][0] * 100))
+        self.mlp_correct.set("{} / {}".format(self.mlp[-1, 3][0], self.mlp[0, -1][0]))
+        self.mlp_time.set(self.mlp[-1, 1][0])
+        """
+        self.cnn_cost.set(self.cnn[-1, 2][0])
+        self.cnn_rate.set("{} %".format(self.cnn[-1, 3][0] / self.cnn[0, -1][0] * 100))
+        self.cnn_correct.set("{} / {}".format(self.cnn[-1, 3][0], self.cnn[0, -1][0]))
+        self.cnn_time.set(self.cnn[-1, 1][0])
+        
+        self.rnn_cost.set(self.rnn[-1, 2][0])
+        self.rnn_rate.set("{} %".format(self.rnn[-1, 3][0] / self.rnn[0, -1][0] * 100))
+        self.rnn_correct.set("{} / {}".format(self.rnn[-1, 3][0], self.rnn[0, -1][0]))
+        self.rnn_time.set(self.rnn[-1, 1][0])
+        """
         return
     
     def create_model(self):
@@ -239,12 +268,12 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.lb3 = Label(self, text="Taxa de Acerto: ")
         self.lb4 = Label(self, text="Qtde de Acerto: ")
         self.lb5 = Label(self, text="Tempo Decorrido: ")
-        self.lb6 = Label(self, text="RNN ")
+        self.lb6 = Label(self, text="CNN ")
         self.lb7 = Label(self, text="Custo Final: ")
         self.lb8 = Label(self, text="Taxa de Acerto: ")
         self.lb9 = Label(self, text="Qtde de Acerto: ")
         self.lb10 = Label(self, text="Tempo Decorrido: ") 
-        self.lb11 = Label(self, text="CNN ")
+        self.lb11 = Label(self, text="RNN ")
         self.lb12 = Label(self, text="Custo Final: ")
         self.lb13 = Label(self, text="Taxa de Acerto: ")
         self.lb14 = Label(self, text="Qtde de Acerto: ")
@@ -257,22 +286,37 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.lb21 = Label(self, text="Gráfico Custo x Acerto: ")
         self.lb22 = Label(self, text="Gráfico Custo x Iteração: ")
         
-        self.ed1 = Entry(self,)
-        self.ed2 = Entry(self,)
-        self.ed3 = Entry(self,)
-        self.ed4 = Entry(self,)
-        self.ed5 = Entry(self,)
-        self.ed6 = Entry(self,)
-        self.ed7 = Entry(self,)
-        self.ed8 = Entry(self,)
-        self.ed9 = Entry(self,)
-        self.ed10 = Entry(self,)
-        self.ed11 = Entry(self,)
-        self.ed12 = Entry(self,)
-    
-        self.btn1 = Button(self, text="Gerar")
-        self.btn2 = Button(self, text="Gerar")
-        self.btn3 = Button(self, text="Gerar")
+        self.mlp_cost = StringVar()
+        self.mlp_rate = StringVar()
+        self.mlp_correct = StringVar()
+        self.mlp_time = StringVar()
+        
+        self.cnn_cost = StringVar()
+        self.cnn_rate = StringVar()
+        self.cnn_correct = StringVar()
+        self.cnn_time = StringVar()
+        
+        self.rnn_cost = StringVar()
+        self.rnn_rate = StringVar()
+        self.rnn_correct = StringVar()
+        self.rnn_time = StringVar()
+        
+        self.ed1 = Entry(self, textvariable=self.mlp_cost)
+        self.ed2 = Entry(self, textvariable=self.mlp_rate)
+        self.ed3 = Entry(self, textvariable=self.mlp_correct)
+        self.ed4 = Entry(self, textvariable=self.mlp_time)
+        self.ed5 = Entry(self, textvariable=self.cnn_cost)
+        self.ed6 = Entry(self, textvariable=self.cnn_rate)
+        self.ed7 = Entry(self, textvariable=self.cnn_correct)
+        self.ed8 = Entry(self, textvariable=self.cnn_time)
+        self.ed9 = Entry(self, textvariable=self.rnn_cost)
+        self.ed10 = Entry(self, textvariable=self.rnn_rate)
+        self.ed11 = Entry(self, textvariable=self.rnn_correct)
+        self.ed12 = Entry(self, textvariable=self.rnn_time)
+        
+        self.btn1 = Button(self, text="Gerar", command=self.plot_train_x_iteration)
+        self.btn2 = Button(self, text="Gerar", command=self.plot_cost_x_correct)
+        self.btn3 = Button(self, text="Gerar", command=self.plot_cost_x_iteration)
         
         #Plotting MLP
         self.plot_frame = Frame(self, width=100, height=100, background='white')
@@ -281,6 +325,36 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         
         return
+       
+    def plot_train_x_iteration(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 1], self.mlp[:, 0], color='red')
+        self.graph.draw()
+        
+        return
+    
+    def plot_cost_x_correct(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 2], self.mlp[:, 3], color='red')
+        self.graph.draw()
+        
+        return
+    
+    def plot_cost_x_iteration(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 2], self.mlp[:, 0], color='red')
+        self.graph.draw()
+        
+        return
+    
+    
+        
     
     def set_position(self):
         # Feedforward    
@@ -336,6 +410,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
         
         return
+    
     
 if __name__ == "__main__":
    
