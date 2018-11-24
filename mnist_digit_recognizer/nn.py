@@ -88,7 +88,6 @@ class TFMLP(NNAbstract):
         self.predict_op = tf.argmax(self.tfY, 1)
         self.init = tf.global_variables_initializer()
         
-        
         return
     
     def update_info(self, screen, train_cost, train_error, tain_correct, test_cost, test_error, test_correct, epoch, batch, start=0):
@@ -123,7 +122,6 @@ class TFMLP(NNAbstract):
         return prediction
 
     def fit(self, screen, train_data, qtd_train, qtd_test, test_period=10, epoch=10, batch_sz=100):
-        print("*"*500, qtd_train, qtd_test)
         self.create_model()
         
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
@@ -133,6 +131,7 @@ class TFMLP(NNAbstract):
         screen.set_maximum_progress(epoch * n_batch)
 
         start = time()
+        self.train_data = []
         
         with tf.Session() as session:
             session.run(self.init)
@@ -163,6 +162,7 @@ class TFMLP(NNAbstract):
                     
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
                      
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -367,6 +367,7 @@ class TFCNN(NNAbstract):
         screen.set_maximum_progress(epoch * n_batch)
 
         start = time()
+        self.train_data = []
         
         with tf.Session() as sess:
             sess.run(self.init)
@@ -400,6 +401,7 @@ class TFCNN(NNAbstract):
                             
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -414,6 +416,7 @@ class TFCNN(NNAbstract):
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, test_loss, train_error * 100))
             self.save_weight(sess)
             self.save_train_data()
+            
         return
     
     
@@ -546,6 +549,7 @@ class TFRNN(NNAbstract):
         screen.set_maximum_progress(epoch * n_batch)
         
         start = time()
+        self.train_data = []
 
         with tf.Session() as sess:
 
@@ -573,6 +577,7 @@ class TFRNN(NNAbstract):
                 
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()

@@ -61,7 +61,8 @@ class NNAbstract(NNInterface):
         model = self.model_name
         save_model_data(self.train_losses, model, 'train_loss')
         save_model_data(self.test_losses, model, 'test_loss')
-        
+        save_model_data(self.train_data, model, 'train_data')
+
         return
     
     def load_train_data(self):
