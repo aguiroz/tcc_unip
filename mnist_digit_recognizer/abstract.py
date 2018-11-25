@@ -31,37 +31,13 @@ class NNAbstract(NNInterface):
         self.model_name = model_name
         return
     
-    @abstractmethod
-    def create_model(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def update_info(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def load_weight(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def save_weight(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def fit(self):
-        raise NotImplementedError
-    
-    @abstractmethod
-    def get_prediction(self):
-        raise NotImplementedError
-        
-    
     def save_train_data(self):
     
         model = self.model_name
         save_model_data(self.train_losses, model, 'train_loss')
         save_model_data(self.test_losses, model, 'test_loss')
-        
+        save_model_data(self.train_data, model, 'train_data')
+
         return
     
     def load_train_data(self):
