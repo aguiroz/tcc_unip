@@ -17,19 +17,21 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 import numpy as np
+from tensorflow.train import AdadeltaOptimizer, AdagradDAOptimizer ,AdagradOptimizer, AdamOptimizer, FtrlOptimizer, GradientDescentOptimizer, ProximalAdagradOptimizer, ProximalGradientDescentOptimizer, RMSPropOptimizer
 
-from tkinter import Tk, Toplevel, Label, Button, Entry, filedialog, StringVar, Frame
+from tkinter import Tk, Toplevel, Label, Button, Entry, filedialog, StringVar, Frame, OptionMenu
     
 class TFMLPScreen(NNScreenAbstract):
     
-    def __init__(self, title='Tensorflow - MLP', train=None, test=None):
+    def __init__(self, features, title='Tensorflow - MLP', train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
+        self.features = features
         self.nn = TFMLP(self)
         
         return
     
     def fit(self):
-        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get())]).start()
+        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get()), self.features.lr, self.features.decay, self.features.momentum, self.features.epoch, self.features.test_period, self.features.batch_sz, self.features.optimizer]).start()
         return
 
     def predict(self):        
@@ -44,13 +46,14 @@ class TFMLPScreen(NNScreenAbstract):
         
 class TFCNNScreen(NNScreenAbstract):
     
-    def __init__(self, title="Tensorflow - CNN", train=None, test=None):
+    def __init__(self, features, title="Tensorflow - CNN", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
+        self.features = features
         self.nn = TFCNN(self)
         return
     
     def fit(self):
-        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get())]).start()
+        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get()), self.features.lr, self.features.decay, self.features.momentum, self.features.epoch, self.features.test_period, self.features.batch_sz, self.features.optimizer]).start()
         return
     
     def predict(self):
@@ -64,13 +67,14 @@ class TFCNNScreen(NNScreenAbstract):
 
 class TFRNNScreen(NNScreenAbstract):
     
-    def __init__(self, title="Tensorflow - RNN", train=None, test=None):
+    def __init__(self, features, title="Tensorflow - RNN", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train, test)
+        self.features = features
         self.nn = TFRNN(self)
         return
 
     def fit(self):
-        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get())]).start()
+        Thread(target=self.nn.fit, args=[self, self.train_data, int(self.qtd_train_var.get()), int(self.qtd_test_var.get()), self.features.lr, self.features.decay, self.features.momentum, self.features.epoch, self.features.test_period, self.features.batch_sz, self.features.optimizer]).start()
         return
     
     def predict(self):
@@ -93,31 +97,37 @@ class MainScreen(ScreenInterface, Tk):
         self.title("Home")
         self.geometry("750x200+100+100")
         
+        self.features = FeatureScreen(show=True)
+        print(self.features.optimizer)
+        
         return
     
     def load_mlp(self):
-        objMlp = TFMLPScreen(train=self.loadData.train_data, test=self.loadData.test_data)
+        objMlp = TFMLPScreen(self.features, train=self.loadData.train_data, test=self.loadData.test_data)
         
         return
     
     def load_cnn(self):
-        objCnn = TFCNNScreen(train=self.loadData.train_data, test=self.loadData.test_data)
+        objCnn = TFCNNScreen(self.features, train=self.loadData.train_data, test=self.loadData.test_data)
         
         return
     
     def load_rnn(self):
-        objRnn = TFRNNScreen(train=self.loadData.train_data, test=self.loadData.test_data)
+        objRnn = TFRNNScreen(self.features, train=self.loadData.train_data, test=self.loadData.test_data)
 
         
         return
         
+    def get_features(self):
+        self.features = FeatureScreen()
+        return
     
     def create_model(self):
         self.lb0 = Label(self, text="Seja Bem-Vindo! :) \n Esse é o nosso Software")
         self.lb1 = Label(self, text="Dataset: ")
         self.lb2 = Label(self, text="Feedforward: ")
-        self.lb3 = Label(self, text="RNN: ")
-        self.lb4 = Label(self, text="CNN: ")
+        self.lb3 = Label(self, text="CNN: ")
+        self.lb4 = Label(self, text="RNN: ")
         self.lb5 = Label(self, text="Parâmetros: ")
         self.lb6 = Label(self, text="Estatísticas: ")
         self.lb7 = Label(self, text="Explicação")
@@ -127,8 +137,8 @@ class MainScreen(ScreenInterface, Tk):
         self.btn3 = Button(self, text="Carregar", command=self.load_cnn)
         self.btn4 = Button(self, text="Carregar", command=self.load_rnn
                            )
-        self.btn5 = Button(self, text="Carregar", command=ReportScreen)
-        self.btn6 = Button(self, text="Carregar")
+        self.btn5 = Button(self, text="Carregar", command=self.get_features)
+        self.btn6 = Button(self, text="Carregar", command=ReportScreen)
         self.btn7 = Button(self, text="Sair", command=self.destroy)
         
         return
@@ -236,8 +246,8 @@ class ReportScreen(ScreenInterface, Toplevel):
     def load_data(self):
         
         self.mlp = load_model_data('MLP', 'train_data')
-        #self.cnn = load_model_data('CNN', 'train_data')
-        #self.rnn = load_model_data('RNN', 'train_data')
+        self.cnn = load_model_data('CNN', 'train_data')
+        self.rnn = load_model_data('RNN', 'train_data')
         
         return
     
@@ -247,7 +257,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.mlp_rate.set("{} %".format(self.mlp[-1, 3][0] / self.mlp[0, -1][0] * 100))
         self.mlp_correct.set("{} / {}".format(self.mlp[-1, 3][0], self.mlp[0, -1][0]))
         self.mlp_time.set(self.mlp[-1, 1][0])
-        """
+        
         self.cnn_cost.set(self.cnn[-1, 2][0])
         self.cnn_rate.set("{} %".format(self.cnn[-1, 3][0] / self.cnn[0, -1][0] * 100))
         self.cnn_correct.set("{} / {}".format(self.cnn[-1, 3][0], self.cnn[0, -1][0]))
@@ -257,7 +267,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.rnn_rate.set("{} %".format(self.rnn[-1, 3][0] / self.rnn[0, -1][0] * 100))
         self.rnn_correct.set("{} / {}".format(self.rnn[-1, 3][0], self.rnn[0, -1][0]))
         self.rnn_time.set(self.rnn[-1, 1][0])
-        """
+        
         return
     
     def create_model(self):
@@ -318,7 +328,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.btn2 = Button(self, text="Gerar", command=self.plot_cost_x_correct)
         self.btn3 = Button(self, text="Gerar", command=self.plot_cost_x_iteration)
         
-        #Plotting MLP
+        #Plotting
         self.plot_frame = Frame(self, width=100, height=100, background='white')
         self.figure = Figure()
         self.ax = self.figure.add_subplot(111)
@@ -331,6 +341,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 1], self.mlp[:, 0], color='red')
+        self.ax.plot(self.cnn[:, 1], self.mlp[:, 0], color='green')
+        self.ax.plot(self.rnn[:, 1], self.mlp[:, 0], color='blue')
         self.graph.draw()
         
         return
@@ -340,6 +352,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 2], self.mlp[:, 3], color='red')
+        self.ax.plot(self.cnn[:, 2], self.mlp[:, 3], color='green')
+        self.ax.plot(self.rnn[:, 2], self.mlp[:, 3], color='blue')
         self.graph.draw()
         
         return
@@ -349,6 +363,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 2], self.mlp[:, 0], color='red')
+        self.ax.plot(self.cnn[:, 2], self.mlp[:, 0], color='green')
+        self.ax.plot(self.rnn[:, 2], self.mlp[:, 0], color='blue')
         self.graph.draw()
         
         return
@@ -408,6 +424,127 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.plot_frame.grid(row=20, column=1, columnspan=8)
         self.ax.grid()
         self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
+        
+        return
+    
+class FeatureScreen(ScreenInterface, Toplevel):
+    
+    def __init__(self, title='Features', show=False):
+        Toplevel.__init__(self)
+        
+        self.create_model()
+        self.set_position()        
+        
+        self.title(title)
+        self.geometry("300x200+100+100")
+        
+        if show:
+            self.set_param()
+        
+        return
+    
+    def create_model(self):
+        
+        #Labels
+        self.lb0 = Label(self, text="Learning Rate ")
+        self.lb1 = Label(self, text="Decay ")
+        self.lb2 = Label(self, text="Momentum ")
+        self.lb3 = Label(self, text="Epoch ")
+        self.lb4 = Label(self, text="Test Period ")
+        self.lb5 = Label(self, text="Batch Size ")
+        self.lb6 = Label(self, text="Algorithm ")
+        
+        #Textvar
+        self.lr_var = StringVar(self, value='0.001')
+        self.decay_var = StringVar(self, value='0.0')
+        self.mom_var = StringVar(self, value='0.9')
+        self.epoch_var = StringVar(self, value='10')
+        self.test_period_var = StringVar(self, value='10')
+        self.batch_sz_var = StringVar(self, value='500')
+        self.algorithm_var = StringVar(self, value='RMSPropOptimizer')
+        
+        #Options
+        self.options = {'AdadeltaOptimizer', 'AdagradDAOptimizer', 'AdagradOptimizer', 'AdamOptimizer', 'FtrlOptimizer', 'GradientDescentOptimizer', 'ProximalAdagradOptimizer', 'ProximalGradientDescentOptimizer', 'RMSPropOptimizer'}
+        
+        #Algorithm
+        self.algorithm = {
+                'AdadeltaOptimizer': AdadeltaOptimizer, 
+                'AdagradDAOptimizer': AdagradDAOptimizer, 
+                'AdagradOptimizer': AdagradOptimizer, 
+                'AdamOptimizer': AdamOptimizer, 
+                'FtrlOptimizer': FtrlOptimizer, 
+                'GradientDescentOptimizer': GradientDescentOptimizer, 
+                'ProximalAdagradOptimizer': ProximalAdagradOptimizer, 
+                'ProximalGradientDescentOptimizer': ProximalGradientDescentOptimizer, 
+                'RMSPropOptimizer': RMSPropOptimizer
+            }
+        
+        #Entry
+        self.ed0 = Entry(self, textvariable=self.lr_var)
+        self.ed1 = Entry(self, textvariable=self.decay_var)
+        self.ed2 = Entry(self, textvariable=self.mom_var)
+        self.ed3 = Entry(self, textvariable=self.epoch_var)
+        self.ed4 = Entry(self, textvariable=self.test_period_var)
+        self.ed5 = Entry(self, textvariable=self.batch_sz_var)
+        
+        #Dropdown
+        self.opt = OptionMenu(self, self.algorithm_var, *self.options)
+        
+        #Button
+        self.btnSave = Button(self, text='Save', command= lambda: self.set_param(self.lr_var.get(), self.decay_var.get(), self.mom_var.get(), self.epoch_var.get(), self.test_period_var.get(), self.batch_sz_var.get(), self.algorithm_var.get()))
+        self.btnCancel = Button(self, text='Cancel', command=self.cancel)
+        
+        return
+    
+    def set_position(self):
+        
+        self.lb0.grid(row=1, column=0)
+        self.lb1.grid(row=2, column=0)
+        self.lb2.grid(row=3, column=0)
+        self.lb3.grid(row=4, column=0)
+        self.lb4.grid(row=5, column=0)
+        self.lb5.grid(row=6, column=0)
+        self.lb6.grid(row=7, column=0)
+        
+        self.ed0.grid(row=1, column=1)
+        self.ed1.grid(row=2, column=1)
+        self.ed2.grid(row=3, column=1)
+        self.ed3.grid(row=4, column=1)
+        self.ed4.grid(row=5, column=1)
+        self.ed5.grid(row=6, column=1)
+        
+        self.opt.grid(row=7, column=1)
+        
+        self.btnSave.grid(row=8, column=0)
+        self.btnCancel.grid(row=8, column=1)
+        
+        return
+    
+    def set_param(self, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer='RMSPropOptimizer'):
+        
+        self.lr = lr 
+        self.decay = decay 
+        self.momentum = momentum
+        self.epoch = epoch
+        self.test_period = test_period
+        self.batch_sz = batch_sz
+        self.optimizer = self.algorithm[optimizer]
+        
+        self.destroy()
+        
+        return
+    
+    def cancel(self):
+        
+        self.lr = 0.001
+        self.decay = 0.9
+        self.momentum = 0.0
+        self.epoch = 10
+        self.test_period = 10
+        self.batch_sz = 500
+        self.optimizer = self.algorithm['RMSPropOptimizer']
+        
+        self.destroy()
         
         return
     
