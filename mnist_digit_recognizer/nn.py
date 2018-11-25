@@ -84,7 +84,6 @@ class TFMLP(NNAbstract):
         self.tfY = tf.matmul(self.tfZ, self.w2) + self.b2
         
         self.loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=self.tfY, labels=self.tfT))
-        self.train = tf.train.RMSPropOptimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
         self.predict_op = tf.argmax(self.tfY, 1)
         self.init = tf.global_variables_initializer()
         
@@ -121,8 +120,9 @@ class TFMLP(NNAbstract):
         
         return prediction
 
-    def fit(self, screen, train_data, qtd_train, qtd_test, test_period=10, epoch=10, batch_sz=100):
+    def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
         self.create_model()
+        self.train = optimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
         
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         
@@ -134,7 +134,7 @@ class TFMLP(NNAbstract):
         self.train_data = []
         
         with tf.Session() as session:
-            session.run(self.init)
+            session.run(tf.initialize_all_variables())
             for i in range(epoch):
                 x_train, y_train = shuffle(x_train, y_train)
                 y_train_ind = get_indicator(y_train)
@@ -283,6 +283,7 @@ class TFCNN(NNAbstract):
         self.T = tf.placeholder(tf.int32, shape=(self.batch_sz, ), name='T')
         
         if not self.load_weight():
+            print('creating...')
             self.w1 = tf.Variable(w1_init.astype(np.float32))
             self.b1 = tf.Variable(b1_init.astype(np.float32))
             self.w2 = tf.Variable(w2_init.astype(np.float32))
@@ -306,7 +307,6 @@ class TFCNN(NNAbstract):
             )
         )
             
-        self.train_op = tf.train.RMSPropOptimizer(lr, decay=0.99, momentum=0.9).minimize(self.cost)
         self.predict_op = tf.argmax(self.Ypred, 1)
 
         self.init = tf.initialize_all_variables()
@@ -355,9 +355,10 @@ class TFCNN(NNAbstract):
         
         return prediction
 
-    def fit(self, screen, train_data, qtd_train, qtd_test, epoch=25, test_period=10, batch_sz=500):
+    def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
         
         self.create_model()
+        self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.cost)
         
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         x_train = np.expand_dims(x_train, axis=3)
@@ -371,7 +372,7 @@ class TFCNN(NNAbstract):
         self.train_data = []
         
         with tf.Session() as sess:
-            sess.run(self.init)
+            sess.run(tf.initialize_all_variables())
             for i in range(epoch):
                 
                 for j in range(n_batch):
@@ -490,7 +491,8 @@ class TFRNN(NNAbstract):
         return
     
     def load_weight(self, sess):
-        self.saver.restore(sess, self.model_path)
+        if check_model_data('RNN', 'model', ext='ckpt'):
+            self.saver.restore(sess, self.model_path)
         pass
     
     def split_data(self, train_data, qtd_train, qtd_test):
@@ -523,11 +525,10 @@ class TFRNN(NNAbstract):
             
         return prediction
     
-    def fit(self, screen, train_data, qtd_train, qtd_test, epoch=15, batch_sz=50, test_period=10):
+    def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
 
         self.create_model()
-        self.train_op = tf.train.RMSPropOptimizer(learning_rate=0.001, momentum=0.9).minimize(self.loss_op)
-        self.init = tf.global_variables_initializer()
+        self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.loss_op)
 
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         n_batch = qtd_train // batch_sz
@@ -542,7 +543,7 @@ class TFRNN(NNAbstract):
 
         with tf.Session() as sess:
 
-            sess.run(self.init)
+            sess.run(tf.initialize_all_variables())
             self.load_weight(sess)
             for i in range(epoch):
                 for j in range(n_batch):
