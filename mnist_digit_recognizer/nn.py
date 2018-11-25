@@ -428,6 +428,8 @@ class TFRNN(NNAbstract):
         self.timesteps = timesteps
         self.hidden_sz = hidden_sz
         self.output_sz = output_sz
+        
+        self.model_path = 'model/RNN/model.ckpt'
 
         self.create_model()
         if self.load_train_data():
@@ -484,7 +486,8 @@ class TFRNN(NNAbstract):
 
         return
     
-    def load_weight(self):
+    def load_weight(self, sess):
+        self.saver.restore(sess, self.model_path)
         pass
     
     def split_data(self, train_data, qtd_train, qtd_test):
@@ -505,13 +508,16 @@ class TFRNN(NNAbstract):
         return prediction
     
     def get_prediction(self, x, sess=None):
+        
         if sess is None:
         
             with tf.Session() as sess:
                 sess.run(tf.initialize_all_tables())
-                self.saver.restore(sess, 'model/RNN/model.ckpt')
+                self.load_weight(sess)
                 prediction = sess.run(self.predict_op, feed_dict={self.X: x})
-        
+        else:
+            prediction = sess.run(self.predict_op, feed_dict={self.X: x})
+            
         return prediction
     
     def fit(self, screen, train_data, qtd_train, qtd_test, epoch=15, batch_sz=50, test_period=10):
@@ -533,7 +539,7 @@ class TFRNN(NNAbstract):
         with tf.Session() as sess:
 
             sess.run(self.init)
-            self.saver.restore(sess, 'model/RNN/model.ckpt')
+            self.load_weight(sess)
             for i in range(epoch):
                 for j in range(n_batch):
                     x_batch = x_train[j * batch_sz:(j * batch_sz + batch_sz)]
