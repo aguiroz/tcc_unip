@@ -251,6 +251,7 @@ class TFCNN(NNAbstract):
         save_model_data(self.b4.eval(sess), model, "b4")
         
         return
+
     
     def convpool(self, x, w, b):
         conv_out = tf.nn.conv2d(x, w, strides=[1, 1, 1, 1], padding='SAME')
@@ -428,7 +429,6 @@ class TFRNN(NNAbstract):
         self.hidden_sz = hidden_sz
         self.output_sz = output_sz
 
-
         self.create_model()
         if self.load_train_data():
             screen.update_plot(self.train_losses, self.test_losses)
@@ -441,31 +441,11 @@ class TFRNN(NNAbstract):
     def RNN(self, x, weights, biases):
 
         x = tf.unstack(x, self.timesteps, 1)
-        lstm_cell = rnn.BasicLSTMCell(self.hidden_sz, forget_bias=1.0)
+        lstm_cell = rnn.BasicLSTMCell(self.hidden_sz, forget_bias=1.0, reuse=tf.AUTO_REUSE)
         outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
 
         return tf.matmul(outputs[-1], weights['out']) + biases['out']
     
-    def load_weight(self):
-        model = self.model_name
-        
-        if not check_model_data(model, "w"):
-            return False
-        if not check_model_data(model, "b"):
-            return False
-        
-
-        w = load_model_data(model, "w")
-        b = load_model_data(model, "b")        
-        
-        self.weights = {
-            'out': tf.Variable(w)        
-        }
-        
-        self.biases = {
-            'out': tf.Variable(b)                
-        }
-        return True
     
     def save_weight(self, sess):
         model = self.model_name
@@ -480,14 +460,13 @@ class TFRNN(NNAbstract):
         self.X = tf.placeholder("float", [None, self.timesteps, self.input_sz])
         self.Y = tf.placeholder("float", [None, self.output_sz])
         
-        if not self.load_weight():
-            self.weights = {
-    		    'out': tf.Variable(tf.random_normal([self.hidden_sz, self.output_sz]))
-    		}
-    
-            self.biases = {
-    		    'out': tf.Variable(tf.random_normal([self.output_sz]))
-    		}
+        self.weights = {
+		    'out': tf.Variable(tf.random_normal([self.hidden_sz, self.output_sz]))
+		}
+
+        self.biases = {
+		    'out': tf.Variable(tf.random_normal([self.output_sz]))
+		}
 
 
         self.logits = self.RNN(self.X, self.weights, self.biases)
@@ -497,16 +476,16 @@ class TFRNN(NNAbstract):
         self.loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
 		    logits=self.logits, labels=self.Y))
         
-        self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=lr)
-        self.train_op = self.optimizer.minimize(self.loss_op)
-
         self.correct_pred = tf.equal(tf.argmax(self.prediction, 1), tf.argmax(self.Y, 1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
         self.init = tf.global_variables_initializer()
-
+        self.saver = tf.train.Saver()
 
         return
+    
+    def load_weight(self):
+        pass
     
     def split_data(self, train_data, qtd_train, qtd_test):
         mnist = np.loadtxt(train_data.name, delimiter=',', skiprows=1, dtype=np.float32)
@@ -525,18 +504,22 @@ class TFRNN(NNAbstract):
         
         return prediction
     
-    def get_prediction(self, x, session=None):
-        if session is None:
-            session = tf.Session()
-            session.run(self.init)
-        prediction = session.run(self.predict_op, feed_dict={self.X: x})
+    def get_prediction(self, x, sess=None):
+        if sess is None:
+        
+            with tf.Session() as sess:
+                sess.run(tf.initialize_all_tables())
+                self.saver.restore(sess, 'model/RNN/model.ckpt')
+                prediction = sess.run(self.predict_op, feed_dict={self.X: x})
         
         return prediction
     
- 
     def fit(self, screen, train_data, qtd_train, qtd_test, epoch=15, batch_sz=50, test_period=10):
 
         self.create_model()
+        self.train_op = tf.train.RMSPropOptimizer(learning_rate=0.001, momentum=0.9).minimize(self.loss_op)
+        self.init = tf.global_variables_initializer()
+
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         n_batch = qtd_train // batch_sz
 
@@ -550,7 +533,7 @@ class TFRNN(NNAbstract):
         with tf.Session() as sess:
 
             sess.run(self.init)
-
+            self.saver.restore(sess, 'model/RNN/model.ckpt')
             for i in range(epoch):
                 for j in range(n_batch):
                     x_batch = x_train[j * batch_sz:(j * batch_sz + batch_sz)]
@@ -585,6 +568,7 @@ class TFRNN(NNAbstract):
                     print("### Test: Epoch: {}, Loss: {}, Error: {}".format(i, train_loss, train_error * 100))
             self.save_weight(sess)
             self.save_train_data()
+            self.saver.save(sess, 'model/RNN/model.ckpt')
 
         return
     
