@@ -71,11 +71,11 @@ def check_path(name):
     
     return
         
-def check_model_data(model, file):
-    return os.path.exists("model/{}/{}.npy".format(model, file))
+def check_model_data(model, file, ext='npy'):
+    return os.path.exists("model/{}/{}.{}".format(model, file, ext))
 
-def load_model_data(model, file):
-    return np.load("model/{}/{}.npy".format(model, file))
+def load_model_data(model, file, ext='npy'):
+    return np.load("model/{}/{}.{}".format(model, file, ext))
 
 def save_model_data(data, model, file):
     np.save("model/{}/{}".format(model, file), data)
