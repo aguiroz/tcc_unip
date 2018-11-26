@@ -21,7 +21,7 @@ from tensorflow.contrib import rnn
 
         
 class TFMLP(NNAbstract):
-    def __init__(self, screen, model_name='MLP', fw='tensorflow', input_sz=784, hidden_sz=300, output_sz=10):
+    def __init__(self, screen, model_name='MLP', fw='tensorflow', input_sz=784, hidden_sz=1000, output_sz=10):
         NNAbstract.__init__(self, model_name, fw)
         
         self.input_sz = input_sz
@@ -114,7 +114,7 @@ class TFMLP(NNAbstract):
         if session is None:
             self.create_model()
             session = tf.Session()
-            session.run(self.init)
+            session.run(tf.initialize_all_variables())
         
         prediction = session.run(self.predict_op, feed_dict={self.tfX: x})
         
@@ -333,20 +333,14 @@ class TFCNN(NNAbstract):
         data = np.loadtxt(input_data.name, delimiter=',', skiprows=1, dtype=np.float32)
         x = np.array([i.reshape(28, 28) for i in data])
         x = np.expand_dims(x, axis=3)
-        x_sz = x.shape[0]
         
-        if x_sz < 500:
-            prediction = np.zeros(500, x.shape[1], x.shape[2], x.shape[3])
-            n_batches = x_sz // self.batch_sz
-            for i in range(n_batches):    
-                prediction[i * self.batch_sz:(i * self.batch_sz + self.batch_sz)] = self.get_prediction(x[i * self.batch_sz:(i * self.batch_sz + self.batch_sz)])
-        else:
-            prediction = self.get_prediction(x)
+        prediction = self.get_prediction(x)        
             
         return prediction
 
     def get_prediction(self, x, session=None):
         if session is None:
+            self.batch_sz = x.shape[0]
             self.create_model()
             session = tf.Session()
             session.run(self.init)
@@ -425,7 +419,7 @@ class TFCNN(NNAbstract):
 ##################################################
     
 class TFRNN(NNAbstract):
-    def __init__(self, screen, model_name='RNN', fw='tensorflow', input_sz=28, timesteps=28, hidden_sz=128, output_sz=10):
+    def __init__(self, screen, model_name='RNN', fw='tensorflow', input_sz=28, timesteps=28, hidden_sz=1000, output_sz=10):
         NNAbstract.__init__(self, model_name, fw)
 
         self.input_sz = input_sz

@@ -49,7 +49,7 @@ class TFCNNScreen(NNScreenAbstract):
     def __init__(self, features, title="Tensorflow - CNN", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
         self.features = features
-        self.nn = TFCNN(self)
+        self.nn = TFCNN(self, batch_sz=self.features.batch_sz)
         return
     
     def fit(self):
@@ -456,8 +456,8 @@ class FeatureScreen(ScreenInterface, Toplevel):
         
         #Textvar
         self.lr_var = StringVar(self, value='0.001')
-        self.decay_var = StringVar(self, value='0.0')
-        self.mom_var = StringVar(self, value='0.9')
+        self.decay_var = StringVar(self, value='0.9')
+        self.mom_var = StringVar(self, value='0.0')
         self.epoch_var = StringVar(self, value='10')
         self.test_period_var = StringVar(self, value='10')
         self.batch_sz_var = StringVar(self, value='500')
@@ -541,7 +541,7 @@ class FeatureScreen(ScreenInterface, Toplevel):
         self.momentum = 0.0
         self.epoch = 10
         self.test_period = 10
-        self.batch_sz = 500
+        self.batch_sz = 300
         self.optimizer = self.algorithm['RMSPropOptimizer']
         
         self.destroy()
