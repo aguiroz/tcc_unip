@@ -511,7 +511,7 @@ class TFRNN(NNAbstract):
         if sess is None:
         
             with tf.Session() as sess:
-                sess.run(tf.initialize_all_tables())
+                sess.run(tf.initialize_all_variables())
                 self.load_weight(sess)
                 prediction = sess.run(self.predict_op, feed_dict={self.X: x})
         else:
