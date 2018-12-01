@@ -6,6 +6,10 @@ Created on Sun Sep  2 12:17:22 2018
 @author: aguiroz
 """
 
+#memory usage
+import os
+import psutil
+
 import numpy as np
 
 #tf
@@ -124,6 +128,8 @@ class TFMLP(NNAbstract):
         self.create_model()
         self.train = optimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
         
+        process = psutil.Process(os.getpid())
+        
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         
         n_batch = qtd_train // batch_sz
@@ -162,7 +168,7 @@ class TFMLP(NNAbstract):
                     
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
                      
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -354,6 +360,8 @@ class TFCNN(NNAbstract):
         self.create_model()
         self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.cost)
         
+        process = psutil.Process(os.getpid())
+        
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         x_train = np.expand_dims(x_train, axis=3)
         x_test = np.expand_dims(x_test, axis=3)
@@ -397,7 +405,7 @@ class TFCNN(NNAbstract):
                             
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -523,6 +531,8 @@ class TFRNN(NNAbstract):
 
         self.create_model()
         self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.loss_op)
+        
+        process = psutil.Process(os.getpid())
 
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
         n_batch = qtd_train // batch_sz
@@ -561,7 +571,7 @@ class TFRNN(NNAbstract):
                 
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()

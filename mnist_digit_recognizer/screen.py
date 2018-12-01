@@ -236,7 +236,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.set_position()        
         
         self.title(title)
-        self.geometry("900x700+100+100")
+        self.geometry("1100x900+100+100")
 
         self.load_data()
         self.set_data()
@@ -257,40 +257,50 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.mlp_rate.set("{} %".format(self.mlp[-1, 3][0] / self.mlp[0, -1][0] * 100))
         self.mlp_correct.set("{} / {}".format(self.mlp[-1, 3][0], self.mlp[0, -1][0]))
         self.mlp_time.set(self.mlp[-1, 1][0])
+        self.mlp_mem.set(self.mlp[-1, 5][0])
         
         self.cnn_cost.set(self.cnn[-1, 2][0])
         self.cnn_rate.set("{} %".format(self.cnn[-1, 3][0] / self.cnn[0, -1][0] * 100))
         self.cnn_correct.set("{} / {}".format(self.cnn[-1, 3][0], self.cnn[0, -1][0]))
         self.cnn_time.set(self.cnn[-1, 1][0])
+        self.cnn_mem.set(self.cnn[-1, 5][0])
         
         self.rnn_cost.set(self.rnn[-1, 2][0])
         self.rnn_rate.set("{} %".format(self.rnn[-1, 3][0] / self.rnn[0, -1][0] * 100))
         self.rnn_correct.set("{} / {}".format(self.rnn[-1, 3][0], self.rnn[0, -1][0]))
         self.rnn_time.set(self.rnn[-1, 1][0])
+        self.rnn_mem.set(self.rnn[-1, 5][0])
         
         return
     
     def create_model(self):
         
         self.lb0 = Label(self, text="Estatísticas ")
-        self.lb1 = Label(self, text="Feedforward ")
+        self.lb1 = Label(self, text="Multi Layer Perceptron")
         self.lb2 = Label(self, text="Custo Final: ")
         self.lb3 = Label(self, text="Taxa de Acerto: ")
         self.lb4 = Label(self, text="Qtde de Acerto: ")
         self.lb5 = Label(self, text="Tempo Decorrido: ")
-        self.lb6 = Label(self, text="CNN ")
+        self.lb_mem_mlp = Label(self, text='Consumo médio de Memória')
+        
+        self.lb6 = Label(self, text="Rede Neural Convolucional ")
         self.lb7 = Label(self, text="Custo Final: ")
         self.lb8 = Label(self, text="Taxa de Acerto: ")
         self.lb9 = Label(self, text="Qtde de Acerto: ")
         self.lb10 = Label(self, text="Tempo Decorrido: ") 
-        self.lb11 = Label(self, text="RNN ")
+        self.lb_mem_cnn = Label(self, text='Consumo médio de Memória')
+        
+        self.lb11 = Label(self, text="Rede Neural Recorrente")
         self.lb12 = Label(self, text="Custo Final: ")
         self.lb13 = Label(self, text="Taxa de Acerto: ")
         self.lb14 = Label(self, text="Qtde de Acerto: ")
         self.lb15 = Label(self, text="Tempo Decorrido: ")
+        self.lb_mem_rnn = Label(self, text='Consumo médio de Memória')
+        
         self.lb16 = Label(self, text=" ")
         self.lb17 = Label(self, text=" ")
         self.lb18 = Label(self, text=" ")
+        
         self.lb19 = Label(self, text="Gráficos ")
         self.lb20 = Label(self, text="Gráfico Tempo x Iteração: ")
         self.lb21 = Label(self, text="Gráfico Custo x Acerto: ")
@@ -300,29 +310,38 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.mlp_rate = StringVar()
         self.mlp_correct = StringVar()
         self.mlp_time = StringVar()
+        self.mlp_mem = StringVar()
         
         self.cnn_cost = StringVar()
         self.cnn_rate = StringVar()
         self.cnn_correct = StringVar()
         self.cnn_time = StringVar()
+        self.cnn_mem = StringVar()
         
         self.rnn_cost = StringVar()
         self.rnn_rate = StringVar()
         self.rnn_correct = StringVar()
         self.rnn_time = StringVar()
+        self.rnn_mem = StringVar()
         
         self.ed1 = Entry(self, textvariable=self.mlp_cost)
         self.ed2 = Entry(self, textvariable=self.mlp_rate)
         self.ed3 = Entry(self, textvariable=self.mlp_correct)
         self.ed4 = Entry(self, textvariable=self.mlp_time)
+        self.ed_mem_cnn = Entry(self, textvariable=self.cnn_mem)
+
         self.ed5 = Entry(self, textvariable=self.cnn_cost)
         self.ed6 = Entry(self, textvariable=self.cnn_rate)
         self.ed7 = Entry(self, textvariable=self.cnn_correct)
         self.ed8 = Entry(self, textvariable=self.cnn_time)
+        self.ed_mem_mlp = Entry(self, textvariable=self.mlp_mem)
+
         self.ed9 = Entry(self, textvariable=self.rnn_cost)
         self.ed10 = Entry(self, textvariable=self.rnn_rate)
         self.ed11 = Entry(self, textvariable=self.rnn_correct)
         self.ed12 = Entry(self, textvariable=self.rnn_time)
+        self.ed_mem_rnn = Entry(self, textvariable=self.rnn_mem)
+        
         
         self.btn1 = Button(self, text="Gerar", command=self.plot_train_x_iteration)
         self.btn2 = Button(self, text="Gerar", command=self.plot_cost_x_correct)
@@ -335,7 +354,72 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         
         return
-       
+
+    def set_position(self):
+        
+        # Feedforward    
+        self.lb1.grid(row=4, column=0, columnspan=2)
+        self.lb2.grid(row=6, column=0)
+        self.lb3.grid(row=7, column=0)
+        self.lb4.grid(row=8, column=0)
+        self.lb5.grid(row=9, column=0)
+        self.lb_mem_mlp.grid(row=10, column=0)
+    
+        # RNN
+        self.lb6.grid(row=4, column=2, columnspan=2)
+        self.lb7.grid(row=6, column=2)
+        self.lb8.grid(row=7, column=2)
+        self.lb9.grid(row=8, column=2)
+        self.lb10.grid(row=9, column=2)
+        self.lb_mem_cnn.grid(row=10, column=2)
+     
+        # CNN
+        self.lb11.grid(row=4, column=4, columnspan=2)
+        self.lb12.grid(row=6, column=4)
+        self.lb13.grid(row=7, column=4)
+        self.lb14.grid(row=8, column=4)
+        self.lb15.grid(row=9, column=4)
+        self.lb_mem_rnn.grid(row=10, column=4)
+        
+        # Label's de divisão
+        self.lb17.grid(row=12, column=0)
+        self.lb18.grid(row=15, column=0)
+        
+        self.ed1.grid(row=6, column=1)
+        self.ed2.grid(row=7, column=1)
+        self.ed3.grid(row=8, column=1)
+        self.ed4.grid(row=9, column=1)
+        self.ed_mem_mlp.grid(row=10, column=1)
+        
+        self.ed5.grid(row=6, column=3)
+        self.ed6.grid(row=7, column=3)
+        self.ed7.grid(row=8, column=3)
+        self.ed8.grid(row=9, column=3)
+        self.ed_mem_cnn.grid(row=10, column=3)
+        
+        self.ed9.grid(row=6, column=5)
+        self.ed10.grid(row=7, column=5)
+        self.ed11.grid(row=8, column=5)
+        self.ed12.grid(row=9, column=5)
+        self.ed_mem_rnn.grid(row=10, column=5)
+        
+        # Label's de divisão
+        self.lb19.grid(row=16, column=2)
+        self.lb20.grid(row=17, column=2)
+        self.btn1.grid(row=17, column=3)
+        self.lb21.grid(row=18, column=2)
+        self.btn2.grid(row=18, column=3)
+        self.lb22.grid(row=19, column=2)
+        self.btn3.grid(row=19, column=3)
+
+        #Plotting
+        self.plot_frame.grid(row=20, column=1, columnspan=8)
+        self.ax.grid()
+        self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
+        
+        return       
+
+
     def plot_train_x_iteration(self):
         
         self.ax.cla()
@@ -369,63 +453,6 @@ class ReportScreen(ScreenInterface, Toplevel):
         
         return
     
-    
-        
-    
-    def set_position(self):
-        # Feedforward    
-        self.lb1.grid(row=4, column=0)
-        self.lb2.grid(row=6, column=0)
-        self.lb3.grid(row=7, column=0)
-        self.lb4.grid(row=8, column=0)
-        self.lb5.grid(row=9, column=0)
-    
-        # RNN
-        self.lb6.grid(row=4, column=2)
-        self.lb7.grid(row=6, column=2)
-        self.lb8.grid(row=7, column=2)
-        self.lb9.grid(row=8, column=2)
-        self.lb10.grid(row=9, column=2)
-     
-        # CNN
-        self.lb11.grid(row=4, column=4)
-        self.lb12.grid(row=6, column=4)
-        self.lb13.grid(row=7, column=4)
-        self.lb14.grid(row=8, column=4)
-        self.lb15.grid(row=9, column=4)
-        
-        # Label's de divisão
-        self.lb17.grid(row=12, column=0)
-        self.lb18.grid(row=15, column=0)
-        
-        self.ed1.grid(row=6, column=1)
-        self.ed2.grid(row=7, column=1)
-        self.ed3.grid(row=8, column=1)
-        self.ed4.grid(row=9, column=1)
-        self.ed5.grid(row=6, column=3)
-        self.ed6.grid(row=7, column=3)
-        self.ed7.grid(row=8, column=3)
-        self.ed8.grid(row=9, column=3)
-        self.ed9.grid(row=6, column=5)
-        self.ed10.grid(row=7, column=5)
-        self.ed11.grid(row=8, column=5)
-        self.ed12.grid(row=9, column=5)
-        
-        # Label's de divisão
-        self.lb19.grid(row=16, column=2)
-        self.lb20.grid(row=17, column=2)
-        self.btn1.grid(row=17, column=3)
-        self.lb21.grid(row=18, column=2)
-        self.btn2.grid(row=18, column=3)
-        self.lb22.grid(row=19, column=2)
-        self.btn3.grid(row=19, column=3)
-
-        #Plotting
-        self.plot_frame.grid(row=20, column=1, columnspan=8)
-        self.ax.grid()
-        self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
-        
-        return
     
 class FeatureScreen(ScreenInterface, Toplevel):
     
