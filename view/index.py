@@ -9,15 +9,15 @@ from Tkinter import *
 class Index:
     janela = Tk()
 
-    lb0 = Label(janela, text="Seja Bem-Vindo! :) \n Esse é o nosso Software, \nvamos formular uma explicação melhor haha")
-    lb1 = Label(janela, text="Dataset: ")
-    lb2 = Label(janela, text="Feedforward: ")
-    lb3 = Label(janela, text="RNN: ")
-    lb4 = Label(janela, text="CNN: ")
-    lb5 = Label(janela, text="Parâmetros: ")
-    lb6 = Label(janela, text="Estatísticas: ")
+    lb0 = Label(janela, text="Seja Bem-Vindo ao MatPy! :)")
+    lb1 = Label(janela, text="Importar Dataset ")
+    lb2 = Label(janela, text="RNA - Multicamadas ")
+    lb3 = Label(janela, text="RNA - Recorrente")
+    lb4 = Label(janela, text="RNA - Convolucional")
+    lb5 = Label(janela, text="Selecionar Algoritmo de Treino")
+    lb6 = Label(janela, text="Visualizar Comparativos")
     lb7 = Label(janela, text="Explicação")
-   
+
     # Esse botões devem carregar o dataset.py
     btn1 = Button(janela, text="Carregar")
     btn2 = Button(janela, text="Carregar")
@@ -27,23 +27,22 @@ class Index:
     btn6 = Button(janela, text="Carregar")
     btn7 = Button(janela, text="Sair", command=janela.destroy)
 
-    lb0.grid(row=5, column=0)
-    lb1.grid(row=0, column=0)
-    lb2.grid(row=0, column=4)
-    lb3.grid(row=0, column=6)
-    lb4.grid(row=1, column=0)
-    lb5.grid(row=1, column=4)
-    lb6.grid(row=1, column=6)
-    
-    btn1.grid(row=0, column=2)
-    btn2.grid(row=0, column=5)
-    btn3.grid(row=0, column=8)
-    btn4.grid(row=1, column=2)
-    btn5.grid(row=1, column=5)
-    btn6.grid(row=1, column=8)
+    lb0.grid(row=0, column=0)
+    lb1.grid(row=1, column=0)
+    lb2.grid(row=1, column=1)
+    lb3.grid(row=3, column=1)
+    lb4.grid(row=6, column=1)
+    lb5.grid(row=3, column=0)
+    lb6.grid(row=1, column=2)
+
+    btn1.grid(row=2, column=0)
+    btn2.grid(row=2, column=1)
+    btn3.grid(row=4, column=1)
+    btn4.grid(row=7, column=1)
+    btn5.grid(row=4, column=0)
+    btn6.grid(row=2, column=2)
     btn7.grid(row=16, column=16)
 
-    janela.title("Home")
-    janela.geometry("750x200+100+100")
+    janela.title("MatPy - Ciência da Computação - UNIP 2018")
+    janela.geometry("600x200+100+100")
     janela.mainloop()
-
