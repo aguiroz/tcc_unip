@@ -126,8 +126,9 @@ class TFMLP(NNAbstract):
 
     def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
         self.create_model()
-        self.train = optimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
-        
+        #self.train = optimizer(lr, decay=decay, momentum=momentum).minimize(self.loss)
+        self.train = tf.train.AdagradOptimizer(lr).minimize(self.loss)
+
         process = psutil.Process(os.getpid())
         
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
@@ -168,7 +169,7 @@ class TFMLP(NNAbstract):
                     
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().rss]])
                      
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -289,7 +290,6 @@ class TFCNN(NNAbstract):
         self.T = tf.placeholder(tf.int32, shape=(self.batch_sz, ), name='T')
         
         if not self.load_weight():
-            print('creating...')
             self.w1 = tf.Variable(w1_init.astype(np.float32))
             self.b1 = tf.Variable(b1_init.astype(np.float32))
             self.w2 = tf.Variable(w2_init.astype(np.float32))
@@ -358,8 +358,10 @@ class TFCNN(NNAbstract):
     def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
         
         self.create_model()
-        self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.cost)
-        
+        #self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.cost)
+        self.train_op = tf.train.AdagradOptimizer(lr).minimize(self.cost)
+
+
         process = psutil.Process(os.getpid())
         
         x_train, y_train, x_test, y_test = self.split_data(train_data, qtd_train, qtd_test)
@@ -405,7 +407,7 @@ class TFCNN(NNAbstract):
                             
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().rss]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()
@@ -527,10 +529,10 @@ class TFRNN(NNAbstract):
             
         return prediction
     
-    def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.RMSPropOptimizer):
-
+    def fit(self, screen, train_data, qtd_train, qtd_test, lr=0.001, decay=0.9, momentum=0.0, epoch=10, test_period=10, batch_sz=500, optimizer=tf.train.GradientDescentOptimizer):
+	    
         self.create_model()
-        self.train_op = optimizer(lr, momentum=momentum, decay=decay).minimize(self.loss_op)
+        self.train_op = tf.train.GradientDescentOptimizer(lr).minimize(self.loss_op)
         
         process = psutil.Process(os.getpid())
 
@@ -571,7 +573,7 @@ class TFRNN(NNAbstract):
                 
                     self.train_losses.append(train_loss)
                     self.test_losses.append(test_loss)
-                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().text]])
+                    self.train_data.append([[i], [time() - start], [train_loss], [train_qtd_correct], [qtd_train], [process.memory_info().rss]])
                     
                     screen.update_plot(self.train_losses, self.test_losses)
                     screen.update_progress()

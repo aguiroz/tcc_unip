@@ -123,7 +123,7 @@ class MainScreen(ScreenInterface, Tk):
         return
     
     def create_model(self):
-        self.lb0 = Label(self, text="Seja Bem-Vindo! :) \n Esse é o nosso Software")
+        self.lb0 = Label(self, text="")
         self.lb1 = Label(self, text="Dataset: ")
         self.lb2 = Label(self, text="Feedforward: ")
         self.lb3 = Label(self, text="CNN: ")
@@ -172,7 +172,7 @@ class MainScreen(ScreenInterface, Tk):
     
 class LoadData(ScreenInterface, Toplevel):
     
-    def __init__(self, root, title="Load Dataset"):        
+    def __init__(self, root, title="Carregar Dataset"):        
         Toplevel.__init__(self, root)
         self.title(title)
         
@@ -212,8 +212,8 @@ class LoadData(ScreenInterface, Toplevel):
         return
     
     def create_model(self):
-        self.lb1 = Label(self, text="Train: ")
-        self.lb2 = Label(self, text="Test: ")
+        self.lb1 = Label(self, text="Treino: ")
+        self.lb2 = Label(self, text="Teste: ")
     
         self.train_var = StringVar()
         self.test_var = StringVar()
@@ -221,10 +221,10 @@ class LoadData(ScreenInterface, Toplevel):
         self.ed1 = Entry(self, textvariable=self.train_var)
         self.ed2 = Entry(self, textvariable=self.test_var)
     
-        self.btn1 = Button(self, text="Search...", command=self.load_train_data)
-        self.btn2 = Button(self, text="Search...", command=self.load_test_data)
-        self.btn3 = Button(self, text="Select", command=self.set_data)
-        self.btn4 = Button(self, text="Cancel", command=self.destroy)
+        self.btn1 = Button(self, text="Procurar...", command=self.load_train_data)
+        self.btn2 = Button(self, text="Procurar...", command=self.load_test_data)
+        self.btn3 = Button(self, text="Selecionar", command=self.set_data)
+        self.btn4 = Button(self, text="Cancelar", command=self.destroy)
     
         return
     
@@ -254,20 +254,20 @@ class ReportScreen(ScreenInterface, Toplevel):
     def set_data(self):
         
         self.mlp_cost.set(self.mlp[-1, 2][0])
-        self.mlp_rate.set("{} %".format(self.mlp[-1, 3][0] / self.mlp[0, -1][0] * 100))
-        self.mlp_correct.set("{} / {}".format(self.mlp[-1, 3][0], self.mlp[0, -1][0]))
+        self.mlp_rate.set("{} %".format(self.mlp[-1, 3][0] / self.mlp[-1, 4][0] * 100))
+        self.mlp_correct.set("{} / {}".format(int(self.mlp[-1, 3][0]), int(self.mlp[-1, 4][0])))
         self.mlp_time.set(self.mlp[-1, 1][0])
         self.mlp_mem.set(self.mlp[-1, 5][0])
         
         self.cnn_cost.set(self.cnn[-1, 2][0])
-        self.cnn_rate.set("{} %".format(self.cnn[-1, 3][0] / self.cnn[0, -1][0] * 100))
-        self.cnn_correct.set("{} / {}".format(self.cnn[-1, 3][0], self.cnn[0, -1][0]))
+        self.cnn_rate.set("{} %".format(self.cnn[-1, 3][0] / self.cnn[-1, 4][0] * 100))
+        self.cnn_correct.set("{} / {}".format(int(self.cnn[-1, 3][0]), int(self.cnn[-1, 4][0])))
         self.cnn_time.set(self.cnn[-1, 1][0])
         self.cnn_mem.set(self.cnn[-1, 5][0])
         
         self.rnn_cost.set(self.rnn[-1, 2][0])
-        self.rnn_rate.set("{} %".format(self.rnn[-1, 3][0] / self.rnn[0, -1][0] * 100))
-        self.rnn_correct.set("{} / {}".format(self.rnn[-1, 3][0], self.rnn[0, -1][0]))
+        self.rnn_rate.set("{} %".format(self.rnn[-1, 3][0] / self.rnn[-1, 4][0] * 100))
+        self.rnn_correct.set("{} / {}".format(int(self.rnn[-1, 3][0]), int(self.rnn[-1, 4][0])))
         self.rnn_time.set(self.rnn[-1, 1][0])
         self.rnn_mem.set(self.rnn[-1, 5][0])
         
@@ -305,6 +305,18 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.lb20 = Label(self, text="Gráfico Tempo x Iteração: ")
         self.lb21 = Label(self, text="Gráfico Custo x Acerto: ")
         self.lb22 = Label(self, text="Gráfico Custo x Iteração: ")
+        
+        self.lblTime = Label(self, text="Gráfico de Tempo")
+        self.lblCost = Label(self, text="Gráfico de Custo")
+        self.lbMemory = Label(self, text="Gráfico de Memória")
+        
+        self.btnTime = Button(self, text="Gerar", command=self.plot_time)
+        self.btnCost = Button(self, text="Gerar", command=self.plot_cost)
+        self.btnMemory = Button(self, text="Gerar", command=self.plot_memory)
+        
+        self.lblAlg = Label(self, text='RMSProp')
+        self.btnNextAlg = Button(self, text='>', command=self.next_alg)
+        self.btnPrevAlg = Button(self, text='<', command=self.prev_alg)
         
         self.mlp_cost = StringVar()
         self.mlp_rate = StringVar()
@@ -405,28 +417,86 @@ class ReportScreen(ScreenInterface, Toplevel):
         
         # Label's de divisão
         self.lb19.grid(row=16, column=2)
-        self.lb20.grid(row=17, column=2)
-        self.btn1.grid(row=17, column=3)
-        self.lb21.grid(row=18, column=2)
-        self.btn2.grid(row=18, column=3)
-        self.lb22.grid(row=19, column=2)
-        self.btn3.grid(row=19, column=3)
+        self.lb20.grid(row=17, column=4)
+        self.btn1.grid(row=17, column=5)
+        self.lb21.grid(row=18, column=4)
+        self.btn2.grid(row=18, column=5)
+        self.lb22.grid(row=19, column=4)
+        self.btn3.grid(row=19, column=5)
+        
+        self.lblTime.grid(row=17, column=1)
+        self.lblCost.grid(row=18, column=1)
+        self.lbMemory.grid(row=19, column=1)
+        
+        self.btnTime.grid(row=17, column=2)
+        self.btnCost.grid(row=18, column=2)
+        self.btnMemory.grid(row=19, column=2)
+        
+        self.lblAlg.grid(row=15, column=2)
+        self.btnPrevAlg.grid(row=15, column=1)
+        self.btnNextAlg.grid(row=15, column=3)
+        
 
         #Plotting
         self.plot_frame.grid(row=20, column=1, columnspan=8)
         self.ax.grid()
         self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
         
-        return       
+        return   
+
+    def next_alg(self):
+        
+        if self.lblAlg['text'] == 'Descida Gradiente':
+            self.lblAlg['text'] = 'Adadelta'
+            self.mlp = load_model_data('MLP/Adadelta', 'train_data')
+            self.cnn = load_model_data('CNN/Adadelta', 'train_data')
+            self.rnn = load_model_data('RNN/Adadelta', 'train_data')
+            self.set_data()
+            return
+        
+        if self.lblAlg['text'] == 'Adadelta':
+            self.lblAlg['text'] = 'RMSProp'
+            self.mlp = load_model_data('MLP/RMSProp', 'train_data')
+            self.cnn = load_model_data('CNN/RMSProp', 'train_data')
+            self.rnn = load_model_data('RNN/RMSProp', 'train_data')
+            self.set_data()
+            return
+        
+        if self.lblAlg['text'] == 'RMSProp':
+            return
+        
+        
+    
+    def prev_alg(self):
+        if self.lblAlg['text'] == 'Descida Gradiente':
+            return
+        
+        if self.lblAlg['text'] == 'Adadelta':
+            self.lblAlg['text'] = 'Descida Gradiente'
+            self.mlp = load_model_data('MLP/GradientDescent', 'train_data')
+            self.cnn = load_model_data('CNN/GradientDescent', 'train_data')
+            self.rnn = load_model_data('RNN/GradientDescent', 'train_data')
+            self.set_data()
+            return
+        
+        if self.lblAlg['text'] == 'RMSProp':
+            self.lblAlg['text'] = 'Adadelta'
+            self.mlp = load_model_data('MLP/Adadelta', 'train_data')
+            self.cnn = load_model_data('CNN/Adadelta', 'train_data')
+            self.rnn = load_model_data('RNN/Adadelta', 'train_data')
+            self.set_data()
+            return
+        
 
 
     def plot_train_x_iteration(self):
         
         self.ax.cla()
         self.ax.grid()
-        self.ax.plot(self.mlp[:, 1], self.mlp[:, 0], color='red')
-        self.ax.plot(self.cnn[:, 1], self.mlp[:, 0], color='green')
-        self.ax.plot(self.rnn[:, 1], self.mlp[:, 0], color='blue')
+        self.ax.plot(self.mlp[:, 0], self.mlp[:, 1], color='red')
+        self.ax.plot(self.cnn[:, 0], self.cnn[:, 1], color='green')
+        self.ax.plot(self.rnn[:, 0], self.rnn[:, 1], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
         self.graph.draw()
         
         return
@@ -435,9 +505,10 @@ class ReportScreen(ScreenInterface, Toplevel):
         
         self.ax.cla()
         self.ax.grid()
-        self.ax.plot(self.mlp[:, 2], self.mlp[:, 3], color='red')
-        self.ax.plot(self.cnn[:, 2], self.mlp[:, 3], color='green')
-        self.ax.plot(self.rnn[:, 2], self.mlp[:, 3], color='blue')
+        self.ax.plot(self.mlp[:, 3], self.mlp[:, 2], color='red')
+        self.ax.plot(self.cnn[:, 3], self.cnn[:, 2], color='green')
+        self.ax.plot(self.rnn[:, 3], self.rnn[:, 2], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
         self.graph.draw()
         
         return
@@ -446,12 +517,50 @@ class ReportScreen(ScreenInterface, Toplevel):
         
         self.ax.cla()
         self.ax.grid()
-        self.ax.plot(self.mlp[:, 2], self.mlp[:, 0], color='red')
-        self.ax.plot(self.cnn[:, 2], self.mlp[:, 0], color='green')
-        self.ax.plot(self.rnn[:, 2], self.mlp[:, 0], color='blue')
+        self.ax.plot(self.mlp[:, 0], self.mlp[:, 2], color='red')
+        self.ax.plot(self.cnn[:, 0], self.cnn[:, 2], color='green')
+        self.ax.plot(self.rnn[:, 0], self.rnn[:, 2], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
         self.graph.draw()
         
         return
+    
+    def plot_time(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 1], color='red')
+        self.ax.plot(self.cnn[:, 1], color='green')
+        self.ax.plot(self.rnn[:, 1], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.graph.draw()
+        
+        return
+    
+    def plot_cost(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 2], color='red')
+        self.ax.plot(self.cnn[:, 2], color='green')
+        self.ax.plot(self.rnn[:, 2], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.graph.draw()
+        
+        return
+    
+    def plot_memory(self):
+        
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.plot(self.mlp[:, 5], color='red')
+        self.ax.plot(self.cnn[:, 5], color='green')
+        self.ax.plot(self.rnn[:, 5], color='blue')
+        self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.graph.draw()
+        
+        return
+    
     
     
 class FeatureScreen(ScreenInterface, Toplevel):
@@ -473,13 +582,13 @@ class FeatureScreen(ScreenInterface, Toplevel):
     def create_model(self):
         
         #Labels
-        self.lb0 = Label(self, text="Learning Rate ")
+        self.lb0 = Label(self, text="Taxa de Aprendizagem ")
         self.lb1 = Label(self, text="Decay ")
         self.lb2 = Label(self, text="Momentum ")
-        self.lb3 = Label(self, text="Epoch ")
-        self.lb4 = Label(self, text="Test Period ")
-        self.lb5 = Label(self, text="Batch Size ")
-        self.lb6 = Label(self, text="Algorithm ")
+        self.lb3 = Label(self, text="Iterações ")
+        self.lb4 = Label(self, text="Periodo de Teste ")
+        self.lb5 = Label(self, text="Tamanho do Lote ")
+        self.lb6 = Label(self, text="Algoritmo ")
         
         #Textvar
         self.lr_var = StringVar(self, value='0.001')
