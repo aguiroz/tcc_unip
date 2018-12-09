@@ -30,8 +30,7 @@ class Dataset:
     btn2.grid(row=2, column=2)
     btn3.grid(row=5, column=1)
     btn4.grid(row=7, column=1)
-    
-    janela.title("Importação do Dataset")
-    janela.geometry("300x120+100+100")
-    janela.mainloop()
 
+    janela.title("Importação do Dataset")
+    janela.geometry("340x120+100+100")
+    janela.mainloop()
