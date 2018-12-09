@@ -23,7 +23,7 @@ from tkinter import Tk, Toplevel, Label, Button, Entry, filedialog, StringVar, F
 
 class TFMLPScreen(NNScreenAbstract):
 
-    def __init__(self, features, title='Tensorflow - MLP', train=None, test=None):
+    def __init__(self, features, title='Rede Neural Multicamadas', train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
         self.features = features
         self.nn = TFMLP(self)
@@ -46,7 +46,7 @@ class TFMLPScreen(NNScreenAbstract):
 
 class TFCNNScreen(NNScreenAbstract):
 
-    def __init__(self, features, title="Tensorflow - CNN", train=None, test=None):
+    def __init__(self, features, title="Rede Neural Convolucional", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train=train, test=test)
         self.features = features
         self.nn = TFCNN(self, batch_sz=self.features.batch_sz)
@@ -67,7 +67,7 @@ class TFCNNScreen(NNScreenAbstract):
 
 class TFRNNScreen(NNScreenAbstract):
 
-    def __init__(self, features, title="Tensorflow - RNN", train=None, test=None):
+    def __init__(self, features, title="Rede Neural Recorrente", train=None, test=None):
         NNScreenAbstract.__init__(self, title, train, test)
         self.features = features
         self.nn = TFRNN(self)
@@ -124,13 +124,12 @@ class MainScreen(ScreenInterface, Tk):
 
     def create_model(self):
         self.lb0 = Label(self, text="")
-        self.lb1 = Label(self, text="Dataset: ")
-        self.lb2 = Label(self, text="Feedforward: ")
-        self.lb3 = Label(self, text="CNN: ")
-        self.lb4 = Label(self, text="RNN: ")
-        self.lb5 = Label(self, text="Parâmetros: ")
-        self.lb6 = Label(self, text="Estatísticas: ")
-        self.lb7 = Label(self, text="Explicação")
+        self.lb1 = Label(self, text="Importar Dataset")
+        self.lb2 = Label(self, text="RNA Multicamadas")
+        self.lb3 = Label(self, text="RNA Convolucional")
+        self.lb4 = Label(self, text="RNA Recorrente")
+        self.lb5 = Label(self, text="Escolher Algoritmo de Treino")
+        self.lb6 = Label(self, text="Visualizar Comparativos")
 
         self.btn1 = Button(self, text="Carregar", command=self.load_dataset)
         self.btn2 = Button(self, text="Carregar", command=self.load_mlp)
@@ -140,26 +139,27 @@ class MainScreen(ScreenInterface, Tk):
         self.btn5 = Button(self, text="Carregar", command=self.get_features)
         self.btn6 = Button(self, text="Carregar", command=ReportScreen)
         self.btn7 = Button(self, text="Sair", command=self.destroy)
+        self.btn8 = Button(self, text="Sobre", command=self.load_about)
 
         return
 
     def set_position(self):
         self.lb0.grid(row=5, column=0)
         self.lb1.grid(row=0, column=0)
-        self.lb2.grid(row=0, column=4)
-        self.lb3.grid(row=0, column=6)
-        self.lb4.grid(row=1, column=0)
-        self.lb5.grid(row=1, column=4)
-        self.lb6.grid(row=1, column=6)
+        self.lb2.grid(row=0, column=1)
+        self.lb3.grid(row=2, column=1)
+        self.lb4.grid(row=4, column=1)
+        self.lb5.grid(row=0, column=2)
+        self.lb6.grid(row=0, column=3)
 
-        self.btn1.grid(row=0, column=2)
-        self.btn2.grid(row=0, column=5)
-        self.btn3.grid(row=0, column=8)
-        self.btn4.grid(row=1, column=2)
-        self.btn5.grid(row=1, column=5)
-        self.btn6.grid(row=1, column=8)
+        self.btn1.grid(row=1, column=0)
+        self.btn2.grid(row=1, column=1)
+        self.btn3.grid(row=3, column=1)
+        self.btn4.grid(row=5, column=1)
+        self.btn5.grid(row=1, column=2)
+        self.btn6.grid(row=1, column=3)
+        self.btn8.grid(row=16, column=15)
         self.btn7.grid(row=16, column=16)
-
 
         return
 
@@ -168,11 +168,62 @@ class MainScreen(ScreenInterface, Tk):
 
         return
 
-######
+    def load_about(self):
+        self.LoadData = LoadAbout(self)
+
+        return
+
+class LoadAbout(ScreenInterface, Toplevel):
+
+    def __init__(self, root, title="Sobre o Software"):
+        Toplevel.__init__(self, root)
+        self.title(title)
+
+        self.create_model()
+        self.set_position()
+
+        self.geometry("450x315+100+100")
+
+    def create_model(self):
+        self.lb1 = Label(self, text="UNIP 2018 - Ciência da Computação")
+        self.lb2 = Label(self, text="Todos os direitos reservados.")
+        self.lb22 = Label(self, text=" ")
+        self.lb3 = Label(self, text="Projeto disponível em GitHub: https://github.com/aguiroz/tcc_unip")
+        self.lb4 = Label(self, text="Autores: @aguiroz @diogofelix @fabiosoaresv @marcosaabarbosa")
+        self.lb44 = Label(self, text=" ")
+        self.lb5 = Label(self, text="O Trabalho de Conclusão de Curso realizado consiste em realizar ")
+        self.lb6 = Label(self, text="uma análise comparativa entre Redes Neurais Artificiais, para ")
+        self.lb7 = Label(self, text="validarmos qual algorimo de otimização e qual arquitetura de RNA ")
+        self.lb8 = Label(self, text="obteve os melhores resultados em relação à consumo de recursos ")
+        self.lb9 = Label(self, text="computacionais, taxa de acerto e tempo. ")
+        self.lb99 = Label(self, text=" ")
+        self.lb10 = Label(self, text="Obrigado à todos que contribuíram para este projeto :)")
+
+        self.btn1 = Button(self, text="Voltar", command=self.destroy)
+
+        return
+
+    def set_position(self):
+
+        self.lb1.grid(row=0, column=1)
+        self.lb2.grid(row=1, column=1)
+        self.lb3.grid(row=2, column=1)
+        self.lb4.grid(row=3, column=1)
+        self.lb44.grid(row=4, column=1)
+        self.lb5.grid(row=5, column=1)
+        self.lb6.grid(row=6, column=1)
+        self.lb7.grid(row=7, column=1)
+        self.lb8.grid(row=8, column=1)
+        self.lb9.grid(row=9, column=1)
+        self.lb99.grid(row=10, column=1)
+        self.lb10.grid(row=11, column=1)
+        self.btn1.grid(row=12, column=1)
+
+        return
 
 class LoadData(ScreenInterface, Toplevel):
-    
-    def __init__(self, root, title="Carregar Dataset"):        
+
+    def __init__(self, root, title="Importar Dataset"):
         Toplevel.__init__(self, root)
         self.title(title)
 
@@ -214,22 +265,22 @@ class LoadData(ScreenInterface, Toplevel):
     def create_model(self):
         self.lb1 = Label(self, text="Treino: ")
         self.lb2 = Label(self, text="Teste: ")
-    
+
         self.train_var = StringVar()
         self.test_var = StringVar()
 
         self.ed1 = Entry(self, textvariable=self.train_var)
         self.ed2 = Entry(self, textvariable=self.test_var)
-    
+
         self.btn1 = Button(self, text="Procurar...", command=self.load_train_data)
         self.btn2 = Button(self, text="Procurar...", command=self.load_test_data)
         self.btn3 = Button(self, text="Selecionar", command=self.set_data)
         self.btn4 = Button(self, text="Cancelar", command=self.destroy)
-    
+
         return
 
 class ReportScreen(ScreenInterface, Toplevel):
-    def __init__(self, title="Reports"):
+    def __init__(self, title="Comparativos entre as RNA's"):
         Toplevel.__init__(self)
 
         self.create_model()
@@ -276,7 +327,7 @@ class ReportScreen(ScreenInterface, Toplevel):
     def create_model(self):
 
         self.lb0 = Label(self, text="Estatísticas ")
-        self.lb1 = Label(self, text="Multi Layer Perceptron")
+        self.lb1 = Label(self, text="Rede Neural Multicamadas")
         self.lb2 = Label(self, text="Custo Final: ")
         self.lb3 = Label(self, text="Taxa de Acerto: ")
         self.lb4 = Label(self, text="Qtde de Acerto: ")
@@ -305,19 +356,19 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.lb20 = Label(self, text="Gráfico Tempo x Iteração: ")
         self.lb21 = Label(self, text="Gráfico Custo x Acerto: ")
         self.lb22 = Label(self, text="Gráfico Custo x Iteração: ")
-        
+
         self.lblTime = Label(self, text="Gráfico de Tempo")
         self.lblCost = Label(self, text="Gráfico de Custo")
         self.lbMemory = Label(self, text="Gráfico de Memória")
-        
+
         self.btnTime = Button(self, text="Gerar", command=self.plot_time)
         self.btnCost = Button(self, text="Gerar", command=self.plot_cost)
         self.btnMemory = Button(self, text="Gerar", command=self.plot_memory)
-        
+
         self.lblAlg = Label(self, text='RMSProp')
         self.btnNextAlg = Button(self, text='>', command=self.next_alg)
         self.btnPrevAlg = Button(self, text='<', command=self.prev_alg)
-        
+
         self.mlp_cost = StringVar()
         self.mlp_rate = StringVar()
         self.mlp_correct = StringVar()
@@ -423,29 +474,29 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.btn2.grid(row=18, column=5)
         self.lb22.grid(row=19, column=4)
         self.btn3.grid(row=19, column=5)
-        
+
         self.lblTime.grid(row=17, column=1)
         self.lblCost.grid(row=18, column=1)
         self.lbMemory.grid(row=19, column=1)
-        
+
         self.btnTime.grid(row=17, column=2)
         self.btnCost.grid(row=18, column=2)
         self.btnMemory.grid(row=19, column=2)
-        
+
         self.lblAlg.grid(row=15, column=2)
         self.btnPrevAlg.grid(row=15, column=1)
         self.btnNextAlg.grid(row=15, column=3)
-        
+
 
         #Plotting
         self.plot_frame.grid(row=20, column=1, columnspan=10)
         self.ax.grid()
         self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
-        
-        return   
+
+        return
 
     def next_alg(self):
-        
+
         if self.lblAlg['text'] == 'Descida Gradiente':
             self.lblAlg['text'] = 'Adadelta'
             self.mlp = load_model_data('MLP/Adadelta', 'train_data')
@@ -453,7 +504,7 @@ class ReportScreen(ScreenInterface, Toplevel):
             self.rnn = load_model_data('RNN/Adadelta', 'train_data')
             self.set_data()
             return
-        
+
         if self.lblAlg['text'] == 'Adadelta':
             self.lblAlg['text'] = 'RMSProp'
             self.mlp = load_model_data('MLP/RMSProp', 'train_data')
@@ -461,16 +512,16 @@ class ReportScreen(ScreenInterface, Toplevel):
             self.rnn = load_model_data('RNN/RMSProp', 'train_data')
             self.set_data()
             return
-        
+
         if self.lblAlg['text'] == 'RMSProp':
             return
-        
-        
-    
+
+
+
     def prev_alg(self):
         if self.lblAlg['text'] == 'Descida Gradiente':
             return
-        
+
         if self.lblAlg['text'] == 'Adadelta':
             self.lblAlg['text'] = 'Descida Gradiente'
             self.mlp = load_model_data('MLP/GradientDescent', 'train_data')
@@ -478,7 +529,7 @@ class ReportScreen(ScreenInterface, Toplevel):
             self.rnn = load_model_data('RNN/GradientDescent', 'train_data')
             self.set_data()
             return
-        
+
         if self.lblAlg['text'] == 'RMSProp':
             self.lblAlg['text'] = 'Adadelta'
             self.mlp = load_model_data('MLP/Adadelta', 'train_data')
@@ -486,7 +537,7 @@ class ReportScreen(ScreenInterface, Toplevel):
             self.rnn = load_model_data('RNN/Adadelta', 'train_data')
             self.set_data()
             return
-        
+
         return
 
 
@@ -529,11 +580,11 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.set_xlabel('Iteração')
         self.ax.set_ylabel('Custo')
         self.graph.draw()
-        
+
         return
-    
+
     def plot_time(self):
-        
+
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 1], color='red')
@@ -545,9 +596,9 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.graph.draw()
 
         return
-    
+
     def plot_cost(self):
-        
+
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 2], color='red')
@@ -557,11 +608,11 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.set_xlabel('Iteração')
         self.ax.set_ylabel('Custo')
         self.graph.draw()
-        
+
         return
-    
+
     def plot_memory(self):
-        
+
         self.ax.cla()
         self.ax.grid()
         self.ax.plot(self.mlp[:, 5], color='red')
@@ -571,13 +622,13 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.set_xlabel('Iteração')
         self.ax.set_ylabel('Consumo de Memória (GB)')
         self.graph.draw()
-        
+
         return
-    
-    
+
+
 class FeatureScreen(ScreenInterface, Toplevel):
 
-    def __init__(self, title='Features', show=False):
+    def __init__(self, title='Algorimo de Treino', show=False):
         Toplevel.__init__(self)
 
         self.create_model()
@@ -601,7 +652,7 @@ class FeatureScreen(ScreenInterface, Toplevel):
         self.lb4 = Label(self, text="Periodo de Teste ")
         self.lb5 = Label(self, text="Tamanho do Lote ")
         self.lb6 = Label(self, text="Algoritmo ")
-        
+
         #Textvar
         self.lr_var = StringVar(self, value='0.001')
         self.decay_var = StringVar(self, value='0.9')
