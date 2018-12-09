@@ -360,7 +360,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.btn3 = Button(self, text="Gerar", command=self.plot_cost_x_iteration)
 
         #Plotting
-        self.plot_frame = Frame(self, width=100, height=100, background='white')
+        self.plot_frame = Frame(self, width=150, height=150, background='white')
         self.figure = Figure()
         self.ax = self.figure.add_subplot(111)
         self.graph = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
@@ -438,7 +438,7 @@ class ReportScreen(ScreenInterface, Toplevel):
         
 
         #Plotting
-        self.plot_frame.grid(row=20, column=1, columnspan=8)
+        self.plot_frame.grid(row=20, column=1, columnspan=10)
         self.ax.grid()
         self.graph.get_tk_widget().pack(side='top', fill='both', expand=True)
         
@@ -498,6 +498,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 0], self.cnn[:, 1], color='green')
         self.ax.plot(self.rnn[:, 0], self.rnn[:, 1], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Iteração')
+        self.ax.set_ylabel('Tempo')
         self.graph.draw()
 
         return
@@ -510,6 +512,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 3], self.cnn[:, 2], color='green')
         self.ax.plot(self.rnn[:, 3], self.rnn[:, 2], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Acerto')
+        self.ax.set_ylabel('Custo')
         self.graph.draw()
 
         return
@@ -522,6 +526,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 0], self.cnn[:, 2], color='green')
         self.ax.plot(self.rnn[:, 0], self.rnn[:, 2], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Iteração')
+        self.ax.set_ylabel('Custo')
         self.graph.draw()
         
         return
@@ -534,6 +540,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 1], color='green')
         self.ax.plot(self.rnn[:, 1], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Iteração')
+        self.ax.set_ylabel('Tempo (Segundos)')
         self.graph.draw()
 
         return
@@ -546,6 +554,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 2], color='green')
         self.ax.plot(self.rnn[:, 2], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Iteração')
+        self.ax.set_ylabel('Custo')
         self.graph.draw()
         
         return
@@ -558,6 +568,8 @@ class ReportScreen(ScreenInterface, Toplevel):
         self.ax.plot(self.cnn[:, 5], color='green')
         self.ax.plot(self.rnn[:, 5], color='blue')
         self.ax.legend(['Rede Multicamadas', 'Rede Convolucional', 'Rede Recorrente'])
+        self.ax.set_xlabel('Iteração')
+        self.ax.set_ylabel('Consumo de Memória (GB)')
         self.graph.draw()
         
         return
